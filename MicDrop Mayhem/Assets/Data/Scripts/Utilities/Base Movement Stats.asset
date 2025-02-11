@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea08b8cc067f4a54780bf5658146b503, type: 3}
+  m_Name: Base Movement Stats
+  m_EditorClassIdentifier: 
+  Groundlayer:
+    serializedVersion: 2
+    m_Bits: 256
+  WallLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  HeadDetectionRayLength: 0.02
+  GroundDetectionRayLength: 0.02
+  HeadWidth: 0.75
+  MaxWalkSpeed: 26.9
+  AirDeceleration: 5
+  AirAcceleration: 5
+  GroundAcceleration: 5
+  GroundDeceleration: 11.9
+  MaxRunSpeed: 20
+  jumpHeight: 8
+  maxFallSpeed: 18
+  timeTillJumpApex: 0.35
+  numberOfJumpsAllowed: 2
+  gravityOnReleaseMultiplier: 0.88
+  jumpHeightCompensationFactor: 1.06
+  timeForUpwardsCancel: 0.227
+  apexThreshold: 0.75
+  apexHangTime: 0.1
+  jumpBufferTime: 0.2
+  jumpCoyoteTime: 0.1
+  debugShowIsgroundedBox: 0
+  debugShowHeadBumpBox: 0
+  showWalkJumpArc: 0
+  showRunJumpArc: 0
+  stopOnCollision: 0
+  drawRight: 0
+  arcResolution: 26
+  visualisationSteps: 90
