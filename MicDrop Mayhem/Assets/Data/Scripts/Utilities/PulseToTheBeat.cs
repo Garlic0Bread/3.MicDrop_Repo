@@ -21,20 +21,10 @@ public class PulseToTheBeat : MonoBehaviour
 
     public void Pulse()
     {
-        if(canPulse == true)
+        if(BeatManager.Instance.canPulse == true)
         {
             transform.localScale = _startSize * _pulseSize;
         }
         //VFX
-    }
-    public void CanPulse()
-    {
-        StartCoroutine(Can_StartPulsing());
-    }
-
-    IEnumerator Can_StartPulsing()
-    {
-        yield return new WaitForSeconds(1);
-        canPulse = true;
     }
 }

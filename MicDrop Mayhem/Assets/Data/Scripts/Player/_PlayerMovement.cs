@@ -104,11 +104,11 @@ public class _PlayerMovement : MonoBehaviour
             {
                 if (isGrounded)
                 {
-                    Move(moveStats.GroundAcceleration, moveStats.GroundDeceleration, _InputManager.P2_Movement);
+                    Move(moveStats.GroundAcceleration, moveStats.GroundDeceleration, _InputManager_P2.Movement);
                 }
                 else
                 {
-                    Move(moveStats.AirAcceleration, moveStats.AirDeceleration, _InputManager.P2_Movement);
+                    Move(moveStats.AirAcceleration, moveStats.AirDeceleration, _InputManager_P2.Movement);
                 }
             }
             else
@@ -169,7 +169,7 @@ public class _PlayerMovement : MonoBehaviour
                 TurnCheck(moveInput);
 
                 Vector2 targetVelocity = Vector2.zero;
-                if (_InputManager.P1_runIsHeld)
+                if (_InputManager_P2.runIsHeld)
                 {
                     targetVelocity = new Vector2(moveInput.x, 0f) * moveStats.MaxRunSpeed;
                 }
@@ -501,7 +501,7 @@ public class _PlayerMovement : MonoBehaviour
             anim.SetFloat("AirY_Speed", rb2.velocity.y);
 
             //when jump button is pressed
-            if (_InputManager.P2_jumpWasPressed)
+            if (_InputManager_P2.jumpWasPressed)
             {
                 anim.SetTrigger("Jump");
                 jumpBufferTimer = moveStats.jumpBufferTime;
@@ -509,7 +509,7 @@ public class _PlayerMovement : MonoBehaviour
             }
 
             //when released
-            if (_InputManager.P2_jumpWasReleased)
+            if (_InputManager_P2.jumpWasReleased)
             {
                 resetTriggersCoroutine = StartCoroutine(Reset());
 
@@ -574,7 +574,7 @@ public class _PlayerMovement : MonoBehaviour
             else if (OnWall() && !isGrounded)
             {
                 anim.SetTrigger("WallSlide");
-                if (_InputManager.P2_jumpWasPressed)
+                if (_InputManager_P2.jumpWasPressed)
                 {
                     // Determine wall direction using isFacingRight (1 if facing right, -1 if facing left)
                     float wallDirection = isFacingRight ? 1f : -1f;

@@ -31,16 +31,6 @@ public class _InputManager : MonoBehaviour
     private InputAction P1_jumpAction;
     private InputAction P1_runAction;
 
-    [Header("Player 2 Input Settings")]
-    public static bool P2_jumpIsHeld;
-    public static bool P2_jumpWasPressed;
-    public static bool P2_jumpWasReleased;
-    public static bool P2_isLightAttacking;
-    private InputAction P2_attackingAction;
-    private InputAction P2_moveAction;
-    private InputAction P2_jumpAction;
-
-
     private void OnEnable()
     {
         p1Controls.Enable();
@@ -60,11 +50,6 @@ public class _InputManager : MonoBehaviour
         P1_jumpAction = playerInput.actions["Jump"];
         P1_runAction = playerInput.actions["Dash"];
 
-        P2_attackingAction = playerInput.actions["Attack_P2"];
-        P2_moveAction = playerInput.actions["P2_Movement"];
-        P2_jumpAction = playerInput.actions["Jump_P2"];
-
-
         P1_SPbtnQ = playerInput.actions["P1_SPbtnQ"];
 
         P2_SPbtnUP = playerInput.actions["P2_SPbtnUP"];
@@ -80,13 +65,6 @@ public class _InputManager : MonoBehaviour
         P1_jumpWasPressed = P1_jumpAction.WasPressedThisFrame();
         P1_isLightAttacking = P1_attackingAction.WasPressedThisFrame();
         P1_jumpWasReleased = P1_jumpAction.WasReleasedThisFrame();
-
-        P2_jumpIsHeld = P2_jumpAction.IsPressed();
-        P2_Movement = P2_moveAction.ReadValue<Vector2>();
-        P2_jumpWasPressed = P2_jumpAction.WasPressedThisFrame();
-        P2_jumpWasReleased = P2_jumpAction.WasReleasedThisFrame();
-        P2_isLightAttacking = P2_attackingAction.WasPressedThisFrame();
-
 
         Q_SPbtn_P1 = P1_SPbtnQ.WasPressedThisFrame();
 

@@ -11,7 +11,7 @@ public class _InputManager_P2 : MonoBehaviour
     public static Vector2 Movement;
 
     public static bool runIsHeld;
-    public static bool isAttacking;
+    public static bool isLightAttacking;
     public static bool jumpIsHeld;
     public static bool jumpWasPressed;
     public static bool jumpWasReleased;
@@ -20,9 +20,6 @@ public class _InputManager_P2 : MonoBehaviour
     private InputAction jumpAction;
     private InputAction runAction;
     private InputAction attackingAction;
-    public string player_MovementName;
-
-    //private InputAction attack;
 
     private void OnEnable()
     {
@@ -50,7 +47,7 @@ public class _InputManager_P2 : MonoBehaviour
         runIsHeld = runAction.IsPressed();
         jumpIsHeld = jumpAction.IsPressed();
         jumpWasPressed = jumpAction.WasPressedThisFrame();
-        isAttacking = attackingAction.WasPressedThisFrame();
+        isLightAttacking = attackingAction.WasPressedThisFrame();
         jumpWasReleased = jumpAction.WasReleasedThisFrame();
     }
 }

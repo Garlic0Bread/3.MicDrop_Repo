@@ -88,77 +88,18 @@ public class _PlayerAttack : MonoBehaviour
         Attacking_Inputs();//inputs for light attack, special attack for both plaer 1 and player 2
     }
 
-    IEnumerator OnBeatAttack()
-    {
-        if (beatManager != null)
-        {
-            // Dynamically fetch the current audio index
-            int audioIndex = beatManager.GetCurrentAudioIndex();
-
-            if (audioIndex != -1 && beatManager.IsOnBeat(audioIndex)) // Check if on beat
-            {
-                onBeatAura.SetActive(true);
-                isOnBeat = true;
-            }
-        }
-        yield return new WaitForSeconds(0.2f);
-        onBeatAura.SetActive(false);
-        isOnBeat = false;
-    }
-    IEnumerator SpecialMove_Activated()
-    {
-        if (this.gameObject.CompareTag("Player1"))
-        {
-            _PlayerMovement my_Movement = gameObject.GetComponent<_PlayerMovement>();
-            anim.SetBool("SpecialAttack", true);
-            spMove_Blockers.SetActive(true);
-            my_Movement.player1_CanMove = false;
-            SP_aura.SetActive(true);
-            canAttack = false;
-        }
-        else if (this.gameObject.CompareTag("Player2"))
-        {
-            _PlayerMovement my_Movement = gameObject.GetComponent<_PlayerMovement>();
-            anim.SetBool("SpecialAttack", true);
-            spMove_Blockers.SetActive(true);
-            my_Movement.player2_CanMove = false;
-            SP_aura.SetActive(true);
-            canAttack = false;
-        }
-
-        yield return new WaitForSeconds(3f);
-
-        if (this.gameObject.CompareTag("Player1"))
-        {
-            _PlayerMovement my_Movement = gameObject.GetComponent<_PlayerMovement>();
-            anim.SetBool("SpecialAttack", false);
-            spMove_Blockers.SetActive(false);
-            my_Movement.player1_CanMove = true;
-            SP_aura.SetActive(false);
-            canAttack = true;
-        }
-        else if (this.gameObject.CompareTag("Player2"))
-        {
-            _PlayerMovement my_Movement = gameObject.GetComponent<_PlayerMovement>();
-            anim.SetBool("SpecialAttack", false);
-            spMove_Blockers.SetActive(false);
-            my_Movement.player2_CanMove = true;
-            SP_aura.SetActive(false);
-            canAttack = true;
-        }
-    }
-
     private void Attacking_Inputs()
     {
         if (this.gameObject.CompareTag("Player1"))
         {
+            #region Code for Specific Times Within Song E.g. Hype part of a song
             currentAudioTime = audioSource.time;
             foreach (float targetTime in targetTimes)
             {
+                
                 if (currentAudioTime >= targetTime - timeWindow && currentAudioTime <= targetTime + timeWindow)
                 {
                     SP_NOW.SetActive(true);
-                    // Player hit within the timing window, apply bonus damage
                     if (_InputManager.Q_SPbtn_P1 && timeSinceAttack >= timeBtwAttacks)
                     {
                         SpecialMove();
@@ -171,12 +112,15 @@ public class _PlayerAttack : MonoBehaviour
                     SP_NOW.SetActive(false); // Disable SP_NOW after the time window has passed
                 }
             }
+            #endregion
 
             if (_InputManager.P1_isLightAttacking && timeSinceAttack >= timeBtwAttacks)
             {
                 isAttacking = true;
                 Light_Attack();
             }
+            timeSinceAttack += Time.deltaTime;
+
             #region SHOOTING
             /*else if (Input.GetMouseButtonDown(1))
             {
@@ -193,15 +137,14 @@ public class _PlayerAttack : MonoBehaviour
                 SetShootMode(ShootMode.Spread);
             }*/
             #endregion
-            timeSinceAttack += Time.deltaTime;
         }
 
 
         //PLAYER TWO
         if (this.gameObject.CompareTag("Player2"))
         {
+            #region Code for Specific Times Within Song E.g. Hype part of a song
             currentAudioTime = audioSource.time;
-
             foreach (float targetTime in targetTimes)
             {
                 if (currentAudioTime >= targetTime - timeWindow && currentAudioTime <= targetTime + timeWindow)
@@ -218,12 +161,15 @@ public class _PlayerAttack : MonoBehaviour
                     SP_NOW.SetActive(false);
                 }
             }
+            #endregion
 
-            if (_InputManager.P2_isLightAttacking && timeSinceAttack >= timeBtwAttacks)
+            if (_InputManager_P2.isLightAttacking && timeSinceAttack >= timeBtwAttacks)
             {
                 isAttacking = true;
                 Light_Attack();
             }
+            timeSinceAttack += Time.deltaTime;
+
             #region SHOOTING
             /*else if (Input.GetMouseButtonDown(1))
             {
@@ -240,7 +186,6 @@ public class _PlayerAttack : MonoBehaviour
                 SetShootMode(ShootMode.Spread);
             }*/
             #endregion
-            timeSinceAttack += Time.deltaTime;
         }
     }
 
@@ -357,6 +302,66 @@ public class _PlayerAttack : MonoBehaviour
         else
             return;
     }
+
+    IEnumerator OnBeatAttack()
+    {
+        if (beatManager != null)
+        {
+            int audioIndex = beatManager.GetCurrentAudioIndex();
+
+            if (audioIndex != -1 && beatManager.IsOnBeat(audioIndex)) // Check if on beat
+            {
+                onBeatAura.SetActive(true);
+                isOnBeat = true;
+            }
+        }
+        yield return new WaitForSeconds(0.2f);
+        onBeatAura.SetActive(false);
+        isOnBeat = false;
+    }
+    IEnumerator SpecialMove_Activated()
+    {
+        if (this.gameObject.CompareTag("Player1"))
+        {
+            _PlayerMovement my_Movement = gameObject.GetComponent<_PlayerMovement>();
+            anim.SetBool("SpecialAttack", true);
+            spMove_Blockers.SetActive(true);
+            my_Movement.player1_CanMove = false;
+            SP_aura.SetActive(true);
+            canAttack = false;
+        }
+        else if (this.gameObject.CompareTag("Player2"))
+        {
+            _PlayerMovement my_Movement = gameObject.GetComponent<_PlayerMovement>();
+            anim.SetBool("SpecialAttack", true);
+            spMove_Blockers.SetActive(true);
+            my_Movement.player2_CanMove = false;
+            SP_aura.SetActive(true);
+            canAttack = false;
+        }
+
+        yield return new WaitForSeconds(3f);
+
+        if (this.gameObject.CompareTag("Player1"))
+        {
+            _PlayerMovement my_Movement = gameObject.GetComponent<_PlayerMovement>();
+            anim.SetBool("SpecialAttack", false);
+            spMove_Blockers.SetActive(false);
+            my_Movement.player1_CanMove = true;
+            SP_aura.SetActive(false);
+            canAttack = true;
+        }
+        else if (this.gameObject.CompareTag("Player2"))
+        {
+            _PlayerMovement my_Movement = gameObject.GetComponent<_PlayerMovement>();
+            anim.SetBool("SpecialAttack", false);
+            spMove_Blockers.SetActive(false);
+            my_Movement.player2_CanMove = true;
+            SP_aura.SetActive(false);
+            canAttack = true;
+        }
+    }
+
     #region SHOOTING LOGIC
     void Projectile_Attack()
     {
