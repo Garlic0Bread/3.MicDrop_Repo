@@ -2,7 +2,6 @@ using TMPro;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.SceneManagement;
 
 public class Game_Manager : MonoBehaviour
 {
@@ -22,13 +21,9 @@ public class Game_Manager : MonoBehaviour
         if (levelTimer < 0)
         {
             levelTimer = 0;
-            EndGame();
+            MenuManager.Instance.EndGame();
         }
 
-        if (Input.GetKey(KeyCode.R))
-        {
-            EndGame();
-        }
         if (Input.GetKeyUp(KeyCode.Escape))
         {
             Application.Quit();
@@ -38,10 +33,7 @@ public class Game_Manager : MonoBehaviour
         p2Points.text = p2_Points.ToString();
     }
 
-    public void EndGame()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
+    
     private void GameTimer()
     {
         if (canStartTimer == true)

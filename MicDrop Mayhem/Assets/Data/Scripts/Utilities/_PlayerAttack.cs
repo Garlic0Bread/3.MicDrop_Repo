@@ -1,16 +1,16 @@
 using OWL;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
+using Unity.VisualScripting.FullSerializer;
 
 public class _PlayerAttack : MonoBehaviour
 {
     private Animator anim;
     public Game_Manager gm;
-    private Rigidbody2D rb2;
     private RaycastHit2D[] hits;
     private int currentAttack = 0;
     public bool isAttacking = false;
@@ -30,7 +30,6 @@ public class _PlayerAttack : MonoBehaviour
     public float damageAmount = 1f;
     public float knockbackForce = 10f;
     public float originalKnockbackForce = 10f;
-    [SerializeField] private GameObject damageEffect;
     [SerializeField] private float attackRange = 1.5f;
     [SerializeField] private Transform attackTransform;
     [SerializeField] private LayerMask attackableLayer;
@@ -46,11 +45,7 @@ public class _PlayerAttack : MonoBehaviour
     [Header("Special Attack Management")]
     [SerializeField] private GameObject spMove_Blockers;
     [SerializeField] private GameObject SP_aura;
-    [SerializeField] private GameObject SP_NOW;
     [SerializeField] private float SP_damage;
-    public PlayerMovemement_Stats moveStats;
-    private float original_MaxMoveSpeed;
-
 
     [Header("Shooting Attack")]
     [SerializeField] private float nextFireTime;
@@ -61,6 +56,12 @@ public class _PlayerAttack : MonoBehaviour
     [SerializeField] private float bulletSpeed = 10f;
     [SerializeField] private float spreadAngle = 15f;
     public ShootMode currentShootmode = ShootMode.Single;
+
+    [Header("Mayhem")]
+    private float mayhem = 0;
+    public float mayhemAmount;
+    public float maxmayhem = 100;
+    [SerializeField] private Image mayhemBar;
 
     private void OnDrawGizmos()
     {
@@ -74,43 +75,36 @@ public class _PlayerAttack : MonoBehaviour
 
     private void Start()
     {
-        original_MaxMoveSpeed = moveStats.MaxWalkSpeed;
-
         extraDamageAmount = damageAmount + extraDamageAmount;
         beatManager = FindObjectOfType<BeatManager>();
         SetShootMode(currentShootmode);
         anim = GetComponent<Animator>();
         timeSinceAttack = timeBtwAttacks;
-        rb2 = GetComponent<Rigidbody2D>();
     }
     private void Update()
     {
         Attacking_Inputs();//inputs for light attack, special attack for both plaer 1 and player 2
+        mayhemBar.fillAmount = mayhem / 100f;
+
     }
 
     private void Attacking_Inputs()
     {
         if (this.gameObject.CompareTag("Player1"))
         {
-            #region Code for Specific Times Within Song E.g. Hype part of a song
+            #region Code for Specific Timestamp Within Song E.g. Hype part of a song. Timestamp can be set in the inspector
             currentAudioTime = audioSource.time;
             foreach (float targetTime in targetTimes)
             {
-                
-                if (currentAudioTime >= targetTime - timeWindow && currentAudioTime <= targetTime + timeWindow)
+                /*if (currentAudioTime >= targetTime - timeWindow && currentAudioTime <= targetTime + timeWindow)
                 {
-                    SP_NOW.SetActive(true);
-                    if (_InputManager.Q_SPbtn_P1 && timeSinceAttack >= timeBtwAttacks)
-                    {
-                        SpecialMove();
-                        //timeSinceAttack = 0; // Reset time since last attack
-                    }
+                   
                 }
 
                 else if (currentAudioTime > targetTime + timeWindow)
                 {
                     SP_NOW.SetActive(false); // Disable SP_NOW after the time window has passed
-                }
+                }*/
             }
             #endregion
 
@@ -143,24 +137,19 @@ public class _PlayerAttack : MonoBehaviour
         //PLAYER TWO
         if (this.gameObject.CompareTag("Player2"))
         {
-            #region Code for Specific Times Within Song E.g. Hype part of a song
+            #region Code for Specific Timestamp Within Song E.g. Hype part of a song. Timestamp can be set in the inspector
             currentAudioTime = audioSource.time;
-            foreach (float targetTime in targetTimes)
+            /*foreach (float targetTime in targetTimes)
             {
                 if (currentAudioTime >= targetTime - timeWindow && currentAudioTime <= targetTime + timeWindow)
                 {
-                    // Player hit within the timing window, apply bonus damage
-                    if (_InputManager.UP_SPbtn_P2 && timeSinceAttack >= timeBtwAttacks)
-                    {
-                        SpecialMove();
-                        //timeSinceAttack = 0; // Reset time since last attack
-                    }
+                    
                 }
                 else
                 {
-                    SP_NOW.SetActive(false);
+
                 }
-            }
+            }*/
             #endregion
 
             if (_InputManager_P2.isLightAttacking && timeSinceAttack >= timeBtwAttacks)
@@ -192,7 +181,6 @@ public class _PlayerAttack : MonoBehaviour
     private void SpecialMove()
     {
         StartCoroutine(SpecialMove_Activated());
-        print("SpecialMove");
         hits = Physics2D.CircleCastAll(attackTransform.position, attackRange, transform.right, 0f, attackableLayer);
         for (int i = 0; i < hits.Length; i++)
         {
@@ -224,9 +212,10 @@ public class _PlayerAttack : MonoBehaviour
                     if (isOnBeat == true)
                     {
                         screenShake.ShakeCamera();
+                        IncreaseMayhem(mayhemAmount);
                         i_Damageable.Damage(extraDamageAmount);
                         Instantiate(hitVFX, hitPosition, Quaternion.identity);
-
+                        #region KNOCKBACK
                         playerMovement.KBCounter = playerMovement.KBTotalTime;
                         playerMovement.KBForce = onBeat_KnockBackForce;
 
@@ -238,13 +227,14 @@ public class _PlayerAttack : MonoBehaviour
                         {
                             playerMovement.KnockFromRight = false;
                         }
+                        #endregion
                     }
                     else if (isOnBeat == false)
                     {
                         screenShake.ShakeCamera();
                         i_Damageable.Damage(damageAmount);
                         Instantiate(hitVFX, hitPosition, Quaternion.identity);
-
+                        #region KNOCKBACK
                         playerMovement.KBCounter = playerMovement.KBTotalTime;
                         playerMovement.KBForce = knockbackForce;
 
@@ -256,12 +246,13 @@ public class _PlayerAttack : MonoBehaviour
                         {
                             playerMovement.KnockFromRight = false;
                         }
+                        #endregion
                     }
-                    
 
+                    #region DEATH KNOCKBACK
                     if (enemyHealth.health <= 15 / enemyHealth.maxhealth * 100)
                     {
-
+                        
                         playerMovement.KBCounter = playerMovement.KBTotalTime;
                         playerMovement.KBForce = death_KnockBackForce;
 
@@ -273,7 +264,9 @@ public class _PlayerAttack : MonoBehaviour
                         {
                             playerMovement.KnockFromRight = false;
                         }
+                        
                     }
+                    #endregion
 
                     if (enemyHealth.health <= 0 && this.gameObject.CompareTag("Player1"))
                     {
@@ -301,6 +294,10 @@ public class _PlayerAttack : MonoBehaviour
         }
         else
             return;
+    }
+    public void IncreaseMayhem(float amount)
+    {
+        this.mayhem += amount;
     }
 
     IEnumerator OnBeatAttack()

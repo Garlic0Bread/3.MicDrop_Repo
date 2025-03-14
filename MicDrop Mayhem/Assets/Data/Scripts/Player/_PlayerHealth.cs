@@ -17,7 +17,6 @@ public class _PlayerHealth : MonoBehaviour, IDamageable
     [SerializeField] private AudioSource death;
     [SerializeField] private GameObject deathVFX;
 
-
     private void Start()
     {
         gm = FindObjectOfType<Game_Manager>();
@@ -27,13 +26,6 @@ public class _PlayerHealth : MonoBehaviour, IDamageable
         healthBar.fillAmount = health / 100f;
     }
 
-    private IEnumerator visualIndicator(Color color)
-    {
-        Color currentColor = GetComponent<SpriteRenderer>().color;
-        GetComponent<SpriteRenderer>().color = color;
-        yield return new WaitForSeconds(0.15f);
-        GetComponent<SpriteRenderer>().color = currentColor;
-    }
     public void Damage(float amount)
     {
         if (amount < 0)
@@ -71,7 +63,7 @@ public class _PlayerHealth : MonoBehaviour, IDamageable
     private void Die()
     {
         Instantiate(deathVFX, transform.position, Quaternion.identity);
-        Invoke("Restart_Level", 2f);
+        Invoke("RespawnPlayer", 2f);
         #region Death KnockBack
 
         body_Collider.enabled = false;
@@ -82,7 +74,15 @@ public class _PlayerHealth : MonoBehaviour, IDamageable
         #endregion
     }
 
-    public void Restart_Level()
+
+    private IEnumerator visualIndicator(Color color)
+    {
+        Color currentColor = GetComponent<SpriteRenderer>().color;
+        GetComponent<SpriteRenderer>().color = color;
+        yield return new WaitForSeconds(0.15f);
+        GetComponent<SpriteRenderer>().color = currentColor;
+    }
+    public void RespawnPlayer()
     {
         if (this.gameObject.CompareTag("Player1"))
         {

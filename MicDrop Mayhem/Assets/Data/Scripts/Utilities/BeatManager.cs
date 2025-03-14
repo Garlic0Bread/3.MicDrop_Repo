@@ -11,6 +11,7 @@ public class BeatManager : MonoBehaviour
     [SerializeField] private float beatWindow = 0.1f; // Time window around each beat for sync detection
     [SerializeField] private float[] _bpms;
     public IntervalSet[] _intervalSets;
+    private int currentSongIndex = 0;
     public bool canPulse = false;
     public Game_Manager gm;
 
@@ -51,10 +52,10 @@ public class BeatManager : MonoBehaviour
     {
         if (gm.rosterIndex == 1)
         {
-            if (_artistSongs.Length > 0)//remove current song before adding
+            if (_artistSongs.Length > 0)//removing current song before adding
             {
-                AudioSource[] firstSongRemoved_FromPlaylist = new AudioSource[_artistSongs.Length - 1];// Create a new array that is one element smaller
-                for (int i = 1; i < _artistSongs.Length; i++)// Copy all elements except the first one into the new array
+                AudioSource[] firstSongRemoved_FromPlaylist = new AudioSource[_artistSongs.Length - 1];
+                for (int i = 1; i < _artistSongs.Length; i++)
                 {
                     firstSongRemoved_FromPlaylist[i - 1] = _artistSongs[i];
                 }
@@ -62,7 +63,7 @@ public class BeatManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError("No AudioSource to remove!");
+                print("no AudioSource to remove!");
             }
 
             AudioSource[] added_ToPlaylist = new AudioSource[_artistSongs.Length + 1];// Create a new array that is one element larger
@@ -89,24 +90,20 @@ public class BeatManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError("No AudioSource to remove!");
+                print("no AudioSource to remove!");
             }
 
-
-            AudioSource[] added_ToPlaylist = new AudioSource[_artistSongs.Length + 1];// Create a new array that is one element larger
-            for (int i = 0; i < _artistSongs.Length; i++)// Copy the existing elements from _audioSources to the new array
+            AudioSource[] added_ToPlaylist = new AudioSource[_artistSongs.Length + 1];// Creating a new array that is one element larger
+            for (int i = 0; i < _artistSongs.Length; i++)
             {
                 added_ToPlaylist[i] = _artistSongs[i];
             }
 
             added_ToPlaylist[_artistSongs.Length] = song;// Add the new AudioSource to the last position in the new array
-
-            // Update the _audioSources reference to the new array
             _artistSongs = added_ToPlaylist;
         }
         if (song == null)
         {
-            Debug.LogError("AudioSource cannot be null!");
             return;
         }
     }
@@ -121,6 +118,23 @@ public class BeatManager : MonoBehaviour
         }
         return -1; // Return -1 if no audio source is currently playing
     }
+    public void PlayPlaylist()
+    {
+        if (_artistSongs == null || _artistSongs.Length == 0)
+        {
+            Debug.Log("No songs in the playlist!");
+            return;
+        }
+
+        currentSongIndex = GetCurrentAudioIndex();
+        if (currentSongIndex == -1)
+        {
+            currentSongIndex = 0; // Start from the beginning if no song is currently playing
+        }
+
+        StartCoroutine(PlaySongsSequentially());
+    }
+
     public bool IsOnBeat(int audioIndex) // Check if the current time of a specific audio source is within the beat window
     {
         if (audioIndex < 0 || audioIndex >= _artistSongs.Length || audioIndex >= _bpms.Length || audioIndex >= _intervalSets.Length)
@@ -199,6 +213,24 @@ public class BeatManager : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
         canPulse = true;
+    }
+    IEnumerator PlaySongsSequentially()
+    {
+        while (currentSongIndex < _artistSongs.Length)
+        {
+            if (_artistSongs[currentSongIndex] != null)
+            {
+                _artistSongs[currentSongIndex].Play();
+
+                // Wait for the current song to finish
+                yield return new WaitForSeconds(_artistSongs[currentSongIndex].clip.length);
+            }
+
+            currentSongIndex++;
+        }
+
+        // Reset playlist index after all songs are played
+        currentSongIndex = 0;
     }
 }
 
