@@ -379,7 +379,7 @@ public class _PlayerAttack : MonoBehaviour
 
         // Apply velocity to the bullet in the forward direction of the gun
         Rigidbody2D bulletRigidbody = bullet.GetComponent<Rigidbody2D>();
-        bulletRigidbody.velocity = playerGun.right * bulletSpeed;
+        bulletRigidbody.linearVelocity = playerGun.right * bulletSpeed;
     }
     void SpreadShooting()
     {
@@ -393,7 +393,7 @@ public class _PlayerAttack : MonoBehaviour
 
             // Apply velocity to the bullet in the forward direction of the gun
             Rigidbody2D bulletRigidbody = bullet.GetComponent<Rigidbody2D>();
-            bulletRigidbody.velocity = direction * bulletSpeed;
+            bulletRigidbody.linearVelocity = direction * bulletSpeed;
         }
     }
     void SetShootMode(ShootMode newMode)

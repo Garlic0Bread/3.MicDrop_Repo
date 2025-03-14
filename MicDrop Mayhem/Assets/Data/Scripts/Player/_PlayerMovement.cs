@@ -89,11 +89,11 @@ public class _PlayerMovement : MonoBehaviour
             {
                 if(KnockFromRight == true)
                 {
-                    rb2.velocity = new Vector2(-KBForce, KBForce/2);
+                    rb2.linearVelocity = new Vector2(-KBForce, KBForce/2);
                 }
                 if(KnockFromRight == false)
                 {
-                    rb2.velocity = new Vector2(KBForce, KBForce/2);
+                    rb2.linearVelocity = new Vector2(KBForce, KBForce/2);
                 }
                 KBCounter -= Time.fixedDeltaTime;
             }
@@ -115,11 +115,11 @@ public class _PlayerMovement : MonoBehaviour
             {
                 if (KnockFromRight == true)
                 {
-                    rb2.velocity = new Vector2(-KBForce, KBForce/4);
+                    rb2.linearVelocity = new Vector2(-KBForce, KBForce/4);
                 }
                 if (KnockFromRight == false)
                 {
-                    rb2.velocity = new Vector2(KBForce, KBForce/4);
+                    rb2.linearVelocity = new Vector2(KBForce, KBForce/4);
                 }
                 KBCounter -= Time.fixedDeltaTime;
             }
@@ -151,12 +151,12 @@ public class _PlayerMovement : MonoBehaviour
                     targetVelocity = new Vector2(moveInput.x, 0f) * moveStats.MaxWalkSpeed;
                 }
                 moveVelocity = Vector2.Lerp(moveVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);
-                rb2.velocity = new Vector2(moveVelocity.x, rb2.velocity.y);
+                rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
             }
             else if (moveInput == Vector2.zero)
             {
                 moveVelocity = Vector2.Lerp(moveVelocity, Vector2.zero, deceleration * Time.fixedDeltaTime);
-                rb2.velocity = new Vector2(moveVelocity.x, rb2.velocity.y);
+                rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
                 anim.SetBool("isWalking", false);
             }
         }
@@ -178,12 +178,12 @@ public class _PlayerMovement : MonoBehaviour
                     targetVelocity = new Vector2(moveInput.x, 0f) * moveStats.MaxWalkSpeed;
                 }
                 moveVelocity = Vector2.Lerp(moveVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);
-                rb2.velocity = new Vector2(moveVelocity.x, rb2.velocity.y);
+                rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
             }
             else if (moveInput == Vector2.zero)
             {
                 moveVelocity = Vector2.Lerp(moveVelocity, Vector2.zero, deceleration * Time.fixedDeltaTime);
-                rb2.velocity = new Vector2(moveVelocity.x, rb2.velocity.y);
+                rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
                 anim.SetBool("isWalking", false);
             }
         }
@@ -305,7 +305,7 @@ public class _PlayerMovement : MonoBehaviour
 
             //clamp fall speed
             verticalVelocity = Mathf.Clamp(verticalVelocity, -moveStats.maxFallSpeed, 50f);
-            rb2.velocity = new Vector2(rb2.velocity.x, verticalVelocity);
+            rb2.linearVelocity = new Vector2(rb2.linearVelocity.x, verticalVelocity);
         }
 
         else if (this.gameObject.CompareTag("Player2"))
@@ -397,14 +397,14 @@ public class _PlayerMovement : MonoBehaviour
 
             //clamp fall speed
             verticalVelocity = Mathf.Clamp(verticalVelocity, -moveStats.maxFallSpeed, 50f);
-            rb2.velocity = new Vector2(rb2.velocity.x, verticalVelocity);
+            rb2.linearVelocity = new Vector2(rb2.linearVelocity.x, verticalVelocity);
         }
     }
     private void JumpChecks()
     {
         if (this.gameObject.CompareTag("Player1"))
         {
-            anim.SetFloat("AirY_Speed", rb2.velocity.y);
+            anim.SetFloat("AirY_Speed", rb2.linearVelocity.y);
 
             //when jump button is pressed
             if (_InputManager.P1_jumpWasPressed)
@@ -490,7 +490,7 @@ public class _PlayerMovement : MonoBehaviour
 
                     // Apply the jump direction to the player's Rigidbody2D
                     moveVelocity = Vector2.Lerp(moveVelocity, jumpDirection, 20f * Time.fixedDeltaTime);
-                    rb2.velocity = new Vector2(moveVelocity.x, rb2.velocity.y);
+                    rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
                     verticalVelocity = moveVelocity.magnitude;
                 }
             }//wall jump
@@ -498,7 +498,7 @@ public class _PlayerMovement : MonoBehaviour
 
         else if (this.gameObject.CompareTag("Player2"))
         {
-            anim.SetFloat("AirY_Speed", rb2.velocity.y);
+            anim.SetFloat("AirY_Speed", rb2.linearVelocity.y);
 
             //when jump button is pressed
             if (_InputManager_P2.jumpWasPressed)
@@ -584,7 +584,7 @@ public class _PlayerMovement : MonoBehaviour
 
                     // Apply the jump direction to the player's Rigidbody2D
                     moveVelocity = Vector2.Lerp(moveVelocity, jumpDirection, 20f * Time.fixedDeltaTime);
-                    rb2.velocity = new Vector2(moveVelocity.x, rb2.velocity.y);
+                    rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
                     verticalVelocity = moveVelocity.magnitude;
                 }
             }//wall jump
