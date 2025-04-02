@@ -7,7 +7,6 @@ public class _PlayerMovement : MonoBehaviour
 {
     public float verticalVelocity { get; private set; }
     private Coroutine resetTriggersCoroutine;
-    _PlayerAttack playerAttack;
 
     public float KBForce;
     public float KBCounter;
@@ -30,7 +29,8 @@ public class _PlayerMovement : MonoBehaviour
     private int numberOfJumpsUsed;
     private bool isFastFalling;
     private float fastfallTime;
-    private bool isJumping;
+    private bool isJumping_P1;
+    private bool isJumping_P2;
     private bool isFalling;
 
     [Header("Jump Buffer Variables")]
@@ -52,152 +52,83 @@ public class _PlayerMovement : MonoBehaviour
     private bool isGrounded;
     private bool bumbedHead;
 
-    private void Awake()
-    {
-        isFacingRight = true;
-        rb2 = GetComponent<Rigidbody2D>();
-    }
     private void Start()
     {
+        isFacingRight = true;
         anim = GetComponent<Animator>();
-        playerAttack = GetComponent<_PlayerAttack>();
+        rb2 = GetComponent<Rigidbody2D>();
     }
     private void Update()
     {
-        CountTimers();
+        JumpTimers();
         JumpChecks();
     }
     private void FixedUpdate()
     {
-        CollisionChecks();
-        Jump();
+        if (!gameObject.CompareTag("Player1") && !gameObject.CompareTag("Player2")) return; // Ensure it's a player
 
-        if (this.gameObject.CompareTag("Player1"))
-        {
-            if(KBCounter <= 0)
-            {
-                if (isGrounded)
-                {
-                    Move(moveStats.GroundAcceleration, moveStats.GroundDeceleration, _InputManager.P1_Movement);
-                }
-                else
-                {
-                    Move(moveStats.AirAcceleration, moveStats.AirDeceleration, _InputManager.P1_Movement);
-                }
-            }
-            else
-            {
-                if(KnockFromRight == true)
-                {
-                    rb2.linearVelocity = new Vector2(-KBForce, KBForce/2);
-                }
-                if(KnockFromRight == false)
-                {
-                    rb2.linearVelocity = new Vector2(KBForce, KBForce/2);
-                }
-                KBCounter -= Time.fixedDeltaTime;
-            }
-        }
-        else if (this.gameObject.CompareTag("Player2"))
-        {
-            if (KBCounter <= 0)
-            {
-                if (isGrounded)
-                {
-                    Move(moveStats.GroundAcceleration, moveStats.GroundDeceleration, _InputManager_P2.Movement);
-                }
-                else
-                {
-                    Move(moveStats.AirAcceleration, moveStats.AirDeceleration, _InputManager_P2.Movement);
-                }
-            }
-            else
-            {
-                if (KnockFromRight == true)
-                {
-                    rb2.linearVelocity = new Vector2(-KBForce, KBForce/4);
-                }
-                if (KnockFromRight == false)
-                {
-                    rb2.linearVelocity = new Vector2(KBForce, KBForce/4);
-                }
-                KBCounter -= Time.fixedDeltaTime;
-            }
-        }
+        CollisionChecks();
+        HandleMovement();
+        Jump();
     }
 
     #region Movement
-    private void Move(float acceleration, float deceleration, Vector2 moveInput)
+    private void HandleMovement()
     {
-        if (playerAttack.timeSinceAttack >= 0.55f)
+        if (KBCounter <= 0)
         {
-            playerAttack.isAttacking = false;
+            float acceleration = isGrounded ? moveStats.GroundAcceleration : moveStats.AirAcceleration;
+            float deceleration = isGrounded ? moveStats.GroundDeceleration : moveStats.AirDeceleration;
+            Vector2 moveInput = GetPlayer_MovementInputs();
+
+            Move(acceleration, deceleration, moveInput);
         }
-
-        if (this.gameObject.CompareTag("Player1"))
+        else
         {
-            if (moveInput != Vector2.zero && player1_CanMove == true)
-            {
-                anim.SetBool("isWalking", true);
-                TurnCheck(moveInput);
-
-                Vector2 targetVelocity = Vector2.zero;
-                if (_InputManager.P1_runIsHeld)
-                {
-                    targetVelocity = new Vector2(moveInput.x, 0f) * moveStats.MaxRunSpeed;
-                }
-                else
-                {
-                    targetVelocity = new Vector2(moveInput.x, 0f) * moveStats.MaxWalkSpeed;
-                }
-                moveVelocity = Vector2.Lerp(moveVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);
-                rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
-            }
-            else if (moveInput == Vector2.zero)
-            {
-                moveVelocity = Vector2.Lerp(moveVelocity, Vector2.zero, deceleration * Time.fixedDeltaTime);
-                rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
-                anim.SetBool("isWalking", false);
-            }
-        }
-
-        else if (this.gameObject.CompareTag("Player2"))
-        {
-            if (moveInput != Vector2.zero && player2_CanMove == true)
-            {
-                anim.SetBool("isWalking", true);
-                TurnCheck(moveInput);
-
-                Vector2 targetVelocity = Vector2.zero;
-                if (_InputManager_P2.runIsHeld)
-                {
-                    targetVelocity = new Vector2(moveInput.x, 0f) * moveStats.MaxRunSpeed;
-                }
-                else
-                {
-                    targetVelocity = new Vector2(moveInput.x, 0f) * moveStats.MaxWalkSpeed;
-                }
-                moveVelocity = Vector2.Lerp(moveVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);
-                rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
-            }
-            else if (moveInput == Vector2.zero)
-            {
-                moveVelocity = Vector2.Lerp(moveVelocity, Vector2.zero, deceleration * Time.fixedDeltaTime);
-                rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
-                anim.SetBool("isWalking", false);
-            }
+            float knockbackY = gameObject.CompareTag("Player1") ? KBForce / 2 : KBForce / 4;
+            ApplyKnockback(knockbackY);
+            KBCounter -= Time.fixedDeltaTime;
         }
     }
-    private void TurnCheck(Vector2 moveInput)
+
+
+    private float GetMaxSpeed()
     {
-        if (isFacingRight && moveInput.x < 0)
+        return gameObject.CompareTag("Player1") ? (_InputManager.P1_runIsHeld ? moveStats.MaxRunSpeed : moveStats.MaxWalkSpeed)
+            : (_InputManager_P2.runIsHeld ? moveStats.MaxRunSpeed : moveStats.MaxWalkSpeed);
+    }
+    void ApplyKnockback(float knockbackY)
+    {
+        float knockbackX = KnockFromRight ? -KBForce : KBForce;
+        rb2.linearVelocity = new Vector2(knockbackX, knockbackY);
+    }
+    private bool CanMove(Vector2 moveInput)
+    {
+        return (gameObject.CompareTag("Player1") && player1_CanMove) || (gameObject.CompareTag("Player2") && player2_CanMove);
+    }
+    private void Move(float acceleration, float deceleration, Vector2 moveInput)
+    {
+        if (!CanMove(moveInput)) return;
+
+        anim.SetBool("isWalking", moveInput != Vector2.zero);
+
+        if (moveInput != Vector2.zero)
         {
-            Turn(false);
+            TurnCheck(moveInput);
+            Vector2 targetVelocity = new Vector2(moveInput.x, 0f) * GetMaxSpeed();
+            moveVelocity = Vector2.Lerp(moveVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);
         }
-        else if (!isFacingRight && moveInput.x > 0)
+        else
         {
-            Turn(true);
+            moveVelocity = Vector2.Lerp(moveVelocity, Vector2.zero, deceleration * Time.fixedDeltaTime);
         }
+
+        rb2.linearVelocity = new Vector2(moveVelocity.x, rb2.linearVelocity.y);
+    }
+
+    Vector2 GetPlayer_MovementInputs()
+    {
+        return gameObject.CompareTag("Player1") ? _InputManager.P1_Movement : _InputManager_P2.Movement;
     }
     private void Turn(bool tunrRight)
     {
@@ -212,13 +143,25 @@ public class _PlayerMovement : MonoBehaviour
             transform.Rotate(0f, -180f, 0f);
         }
     }
+    private void TurnCheck(Vector2 moveInput)
+    {
+        if (isFacingRight && moveInput.x < 0)
+        {
+            Turn(false);
+        }
+        else if (!isFacingRight && moveInput.x > 0)
+        {
+            Turn(true);
+        }
+    }
     #endregion
+
     #region Jumping
     private void Jump()
     {
         if (this.gameObject.CompareTag("Player1"))
         {
-            if (isJumping)
+            if (isJumping_P1)
             {
                 //check for head bump
                 if (bumbedHead)
@@ -294,7 +237,7 @@ public class _PlayerMovement : MonoBehaviour
             }
 
             //normal gravity while falling
-            if (!isGrounded && !isJumping)
+            if (!isGrounded && !isJumping_P1)
             {
                 if (!isFalling)
                 {
@@ -310,7 +253,7 @@ public class _PlayerMovement : MonoBehaviour
 
         else if (this.gameObject.CompareTag("Player2"))
         {
-            if (isJumping)
+            if (isJumping_P2)
             {
                 //check for head bump
                 if (bumbedHead)
@@ -386,7 +329,7 @@ public class _PlayerMovement : MonoBehaviour
             }
 
             //normal gravity while falling
-            if (!isGrounded && !isJumping)
+            if (!isGrounded && !isJumping_P2)
             {
                 if (!isFalling)
                 {
@@ -423,7 +366,7 @@ public class _PlayerMovement : MonoBehaviour
                 {
                     jumpReleasesDuringBuffer = true;
                 }
-                if (isJumping && verticalVelocity > 0f)
+                if (isJumping_P1 && verticalVelocity > 0f)
                 {
                     if (isPastApexThreshold)
                     {
@@ -441,7 +384,7 @@ public class _PlayerMovement : MonoBehaviour
             }
 
             //initiate jump w jump buffering and coyote time
-            if (jumpBufferTimer > 0f && !isJumping && (isGrounded || coyoteTimer > 0f))
+            if (jumpBufferTimer > 0f && !isJumping_P1 && (isGrounded || coyoteTimer > 0f))
             {
                 InitiateJump(1);
                 if (jumpReleasesDuringBuffer)
@@ -452,7 +395,7 @@ public class _PlayerMovement : MonoBehaviour
             }
 
             //double jump
-            else if (jumpBufferTimer > 0f && isJumping && numberOfJumpsUsed < moveStats.numberOfJumpsAllowed)
+            else if (jumpBufferTimer > 0f && isJumping_P1 && numberOfJumpsUsed < moveStats.numberOfJumpsAllowed)
             {
                 isFastFalling = false;
                 InitiateJump(1);
@@ -466,9 +409,9 @@ public class _PlayerMovement : MonoBehaviour
             }
 
             //landed
-            if ((isJumping || isFastFalling) && isGrounded && verticalVelocity <= 0f)
+            if ((isJumping_P1 || isFastFalling) && isGrounded && verticalVelocity <= 0f)
             {
-                isJumping = false;
+                isJumping_P1 = false;
                 isFalling = false;
                 isFastFalling = false;
                 fastfallTime = 0f;
@@ -517,7 +460,7 @@ public class _PlayerMovement : MonoBehaviour
                 {
                     jumpReleasesDuringBuffer = true;
                 }
-                if (isJumping && verticalVelocity > 0f)
+                if (isJumping_P2 && verticalVelocity > 0f)
                 {
                     if (isPastApexThreshold)
                     {
@@ -535,7 +478,7 @@ public class _PlayerMovement : MonoBehaviour
             }
 
             //initiate jump w jump buffering and coyote time
-            if (jumpBufferTimer > 0f && !isJumping && (isGrounded || coyoteTimer > 0f))
+            if (jumpBufferTimer > 0f && !isJumping_P2 && (isGrounded || coyoteTimer > 0f))
             {
                 InitiateJump(1);
                 if (jumpReleasesDuringBuffer)
@@ -546,7 +489,7 @@ public class _PlayerMovement : MonoBehaviour
             }
 
             //double jump
-            else if (jumpBufferTimer > 0f && isJumping && numberOfJumpsUsed < moveStats.numberOfJumpsAllowed)
+            else if (jumpBufferTimer > 0f && isJumping_P2 && numberOfJumpsUsed < moveStats.numberOfJumpsAllowed)
             {
                 isFastFalling = false;
                 InitiateJump(1);
@@ -560,9 +503,9 @@ public class _PlayerMovement : MonoBehaviour
             }
 
             //landed
-            if ((isJumping || isFastFalling) && isGrounded && verticalVelocity <= 0f)
+            if ((isJumping_P2 || isFastFalling) && isGrounded && verticalVelocity <= 0f)
             {
-                isJumping = false;
+                isJumping_P2 = false;
                 isFalling = false;
                 isFastFalling = false;
                 fastfallTime = 0f;
@@ -590,15 +533,46 @@ public class _PlayerMovement : MonoBehaviour
             }//wall jump
         }
     }
+    private void JumpTimers()
+    {
+        jumpBufferTimer -= Time.deltaTime;
+        if (!isGrounded)
+        {
+            coyoteTimer -= Time.deltaTime;
+        }
+        else
+        {
+            coyoteTimer = moveStats.jumpCoyoteTime;
+        }
+    }
+    private IEnumerator Reset()
+    {
+        yield return null;
+        anim.ResetTrigger("Jump");
+    }
     private void InitiateJump(int NumberOfJumpsUsed)
     {
-        if (!isJumping)
+        if (this.gameObject.CompareTag("Player1"))
         {
-            isJumping = true;
+            if (!isJumping_P1)
+            {
+                isJumping_P1 = true;
+            }
+            jumpBufferTimer = 0f;
+            numberOfJumpsUsed += NumberOfJumpsUsed;
+            verticalVelocity = moveStats.InitialJumpVelocity;
+        } 
+
+        else if (this.gameObject.CompareTag("Player2"))
+        {
+            if (!isJumping_P2)
+            {
+                isJumping_P2 = true;
+            }
+            jumpBufferTimer = 0f;
+            numberOfJumpsUsed += NumberOfJumpsUsed;
+            verticalVelocity = moveStats.InitialJumpVelocity;
         }
-        jumpBufferTimer = 0f;
-        numberOfJumpsUsed += NumberOfJumpsUsed;
-        verticalVelocity = moveStats.InitialJumpVelocity;
     }
     #endregion
     #region Collision Checks
@@ -674,22 +648,4 @@ public class _PlayerMovement : MonoBehaviour
         BumpedHead();
     }
     #endregion
-
-    private IEnumerator Reset()
-    {
-        yield return null;
-        anim.ResetTrigger("Jump");
-    }
-    private void CountTimers()
-    {
-        jumpBufferTimer -= Time.deltaTime;
-        if (!isGrounded)
-        {
-            coyoteTimer -= Time.deltaTime;
-        }
-        else
-        {
-            coyoteTimer = moveStats.jumpCoyoteTime;
-        }
-    }
 }

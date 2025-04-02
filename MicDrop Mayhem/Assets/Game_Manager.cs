@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 public class Game_Manager : MonoBehaviour
 {
+    public static Game_Manager Instance { get; private set; }
+
     public bool canStartTimer = false;
     public int rosterIndex = 1;//roster of songs
     public int p1_Points;
@@ -14,6 +16,19 @@ public class Game_Manager : MonoBehaviour
 
     [SerializeField] private float levelTimer;
     [SerializeField] private TMP_Text levelTimer_txt;
+
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            Instance = this;
+        }
+    }
 
     void Update()
     {

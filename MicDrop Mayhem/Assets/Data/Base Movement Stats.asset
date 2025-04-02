@@ -21,7 +21,7 @@ MonoBehaviour:
   HeadDetectionRayLength: 0.02
   GroundDetectionRayLength: 0.02
   HeadWidth: 0.75
-  MaxWalkSpeed: 26.9
+  MaxWalkSpeed: 45
   AirDeceleration: 5
   AirAcceleration: 5
   GroundAcceleration: 5

@@ -19,7 +19,7 @@ public class _PlayerHealth : MonoBehaviour, IDamageable
 
     private void Start()
     {
-        gm = FindObjectOfType<Game_Manager>();
+        gm = FindFirstObjectByType<Game_Manager>();
     }
     private void Update()
     {

@@ -9,7 +9,7 @@ public class DeathTrigger : MonoBehaviour
 
     private void Start()
     {
-        gm = FindObjectOfType<Game_Manager>();
+        gm = FindFirstObjectByType<Game_Manager>();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
