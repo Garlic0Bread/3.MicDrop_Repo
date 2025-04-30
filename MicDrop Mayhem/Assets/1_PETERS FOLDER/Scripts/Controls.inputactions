@@ -1,8 +1,8 @@
 {
-    "name": "New Controls",
+    "name": "Controls",
     "maps": [
         {
-            "name": "PlayerNew",
+            "name": "Player",
             "id": "d3f86101-d3bf-4f0f-9ba7-f494bc43b0e9",
             "actions": [
                 {
@@ -70,7 +70,7 @@
                 {
                     "name": "left",
                     "id": "549a274b-711e-4138-9ce4-70defae59ad8",
-                    "path": "<Keyboard>/a",
+                    "path": "<Keyboard>/d",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -81,7 +81,7 @@
                 {
                     "name": "right",
                     "id": "f485bfae-7a0f-4b9b-82dd-50d777253d3a",
-                    "path": "<Keyboard>/d",
+                    "path": "<Keyboard>/a",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

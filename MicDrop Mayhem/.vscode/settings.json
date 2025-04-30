@@ -57,5 +57,9 @@
     "Temp/": true
   },
   "dotnet.defaultSolution": "MicDrop Mayhem.sln",
-  "CodeGPT.apiKey": "CodeGPT Plus Beta"
+  "CodeGPT.apiKey": "CodeGPT Plus Beta",
+  "cSpell.words": [
+    "raycolor",
+    "Rigidbody"
+  ]
 }
