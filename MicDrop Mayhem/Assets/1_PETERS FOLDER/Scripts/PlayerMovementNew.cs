@@ -19,7 +19,7 @@ public class PlayerMovementNew : MonoBehaviour
 
     // Collision check variables
     private RaycastHit _groundHit;
-    private bool _isGrounded;
+    public bool _isGrounded;
 
     // Jump variables
     public float VerticalVelocity { get; private set; }
@@ -29,7 +29,7 @@ public class PlayerMovementNew : MonoBehaviour
     private float _fastFallTime;
     private float _fastFallReleaseSpeed;
     private int _numberOfJumpsUsed;
-    
+
 
 
 
@@ -79,9 +79,23 @@ public class PlayerMovementNew : MonoBehaviour
         }
     }
 
+
+    private void OnDrawGizmos()
+    {
+        if (movementSTats.ShowWalkJumpArc)
+        {
+            DrawJumpArc(movementSTats.MaxWalkSpeed, Color.white);
+        }
+        if (movementSTats.ShowRunJumpArc)
+        {
+            DrawJumpArc(movementSTats.MaxRunSpeed, Color.red);
+        }
+
+    }
+
     #region Movement
 
-    
+
 
     [Obsolete]
     private void Move(float acceleration, float deceleration, Vector3 moveInput)
@@ -136,9 +150,9 @@ public class PlayerMovementNew : MonoBehaviour
             _jumpReleasedDuringBuffer = false;
 
         }
-        
+
         //WHEN WE RELEASE THE JUMP BUTTON
-        if(InputManagerNew.JumpWasReleased)
+        if (InputManagerNew.JumpWasReleased)
         {
             if (_jumpBufferTimer > 0f)
             {
@@ -146,7 +160,7 @@ public class PlayerMovementNew : MonoBehaviour
             }
             if (_isJumping && VerticalVelocity > 0f)
             {
-                if(_isPastApexThreshold)
+                if (_isPastApexThreshold)
                 {
                     _isPastApexThreshold = false;
                     _isFastFalling = true;
@@ -166,7 +180,7 @@ public class PlayerMovementNew : MonoBehaviour
         {
             InitiateJump(1);
 
-            if (_jumpReleasedDuringBuffer) 
+            if (_jumpReleasedDuringBuffer)
             {
                 _isFastFalling = true;
                 _fastFallReleaseSpeed = VerticalVelocity;
@@ -182,11 +196,11 @@ public class PlayerMovementNew : MonoBehaviour
         }
 
         //AIR JUMP AFTER COYOTE TIME LAPSED
-        else if (_jumpBufferTimer > 0f && _isFalling && _numberOfJumpsUsed < movementSTats.NumberOfJumpsAllowed -1)
+        else if (_jumpBufferTimer > 0f && _isFalling && _numberOfJumpsUsed < movementSTats.NumberOfJumpsAllowed - 1)
         {
             InitiateJump(2); // I CAN ADD JUMP VFX HERE
             _isFastFalling = false;
-            
+
         }
 
         //LANDED
@@ -208,12 +222,12 @@ public class PlayerMovementNew : MonoBehaviour
 
     private void InitiateJump(int numberOfJumpsUsed)
     {
-        if(!_isJumping)
+        if (!_isJumping)
         {
             _isJumping = true;
         }
 
-        _jumpBufferTimer= 0f;
+        _jumpBufferTimer = 0f;
         _numberOfJumpsUsed += numberOfJumpsUsed;
         VerticalVelocity = movementSTats.InitialJumpVelocity;
     }
@@ -237,7 +251,7 @@ public class PlayerMovementNew : MonoBehaviour
 
                 if (_apexPoint > movementSTats.ApexThreshold)
                 {
-                    if(!_isPastApexThreshold)
+                    if (!_isPastApexThreshold)
                     {
                         _isPastApexThreshold = true;
                         _timePastApexThreshold = 0f;
@@ -269,7 +283,7 @@ public class PlayerMovementNew : MonoBehaviour
                 }
 
             }
-            
+
             //GRAVITY ON DESCENDING 
             else if (!_isFastFalling)
             {
@@ -284,7 +298,7 @@ public class PlayerMovementNew : MonoBehaviour
                 }
             }
         }
-      
+
 
         //JUMP CUT
         if (_isFastFalling)
@@ -312,7 +326,7 @@ public class PlayerMovementNew : MonoBehaviour
 
         //CLAMP FALL SPEED
         VerticalVelocity = Mathf.Clamp(VerticalVelocity, -movementSTats.MaxFallSpeed, 50f); //can change the 50
-        _rb.linearVelocity = new Vector3 (_rb.linearVelocity.x, VerticalVelocity, _rb.linearVelocity.z);
+        _rb.linearVelocity = new Vector3(_rb.linearVelocity.x, VerticalVelocity, _rb.linearVelocity.z);
     }
 
     #endregion
@@ -322,17 +336,24 @@ public class PlayerMovementNew : MonoBehaviour
     private void IsGrounded()
     {
         Vector3 origin = new Vector3(_feetColl.bounds.center.x, _feetColl.bounds.min.y - 0.01f, _feetColl.bounds.center.z);
-        Vector3 halfExtents = new Vector3(_feetColl.bounds.extents.x, 0.05f, _feetColl.bounds.extents.z);
-        float distance = movementSTats.GroundDetectionRayLength = 0.2f;
+        Vector3 halfExtents = new Vector3(_feetColl.bounds.extents.x * movementSTats.HeadWidth, 0.1f, _feetColl.bounds.extents.z);
+        float distance = movementSTats.GroundDetectionRayLength = 0.9f;
 
-        _isGrounded = Physics.BoxCast(origin, halfExtents, Vector3.down, out _groundHit, Quaternion.identity, distance, movementSTats.GroundLayer);
+
+        _isGrounded = Physics.BoxCast(origin, halfExtents * 0.5f, Vector3.down, out _groundHit, Quaternion.identity, distance, movementSTats.GroundLayer);
 
         #region Debug Visualization
 
         if (movementSTats.DebugShowIsGroundedBox)
         {
             Color rayColor = _isGrounded ? Color.green : Color.red;
-            Debug.DrawRay(origin, Vector3.down * distance, rayColor);
+            Vector3 offset = new Vector3(halfExtents.x / 2 * movementSTats.HeadWidth, 0f, 0f);
+            Vector3 rayStartL = origin - offset;
+            Vector3 rayStartR = origin + offset;
+
+            Debug.DrawRay(rayStartL, Vector3.down * distance, rayColor);
+            Debug.DrawRay(rayStartR, Vector3.down * distance, rayColor);
+            Debug.DrawRay(rayStartL + Vector3.down * distance, Vector3.right * halfExtents.x * movementSTats.HeadWidth, rayColor);
         }
 
         #endregion
@@ -342,30 +363,30 @@ public class PlayerMovementNew : MonoBehaviour
 
 
     private void BumpedHead()
-{
-    Vector3 boxCastOrigin = new Vector3(_feetColl.bounds.center.x, _bodyColl.bounds.max.y, _feetColl.bounds.center.z);
-    Vector3 boxCastSize = new Vector3(_feetColl.bounds.size.x * movementSTats.HeadWidth, 0.1f, _feetColl.bounds.size.z);
-
-    float castDistance = movementSTats.HeadDetectionRayLength;
-    _bumpedHead = Physics.BoxCast(boxCastOrigin, boxCastSize * 0.5f, Vector3.up, out _headHit, Quaternion.identity, castDistance, movementSTats.GroundLayer);
-
-    #region Debug Visualization
-
-    if (movementSTats.DebugShowHeadBumpBox)
     {
-        Color rayColor = _bumpedHead ? Color.green : Color.red;
+        Vector3 boxCastOrigin = new Vector3(_feetColl.bounds.center.x, _bodyColl.bounds.max.y, _feetColl.bounds.center.z);
+        Vector3 boxCastSize = new Vector3(_feetColl.bounds.size.x * movementSTats.HeadWidth, 0.1f, _feetColl.bounds.size.z);
 
-        Vector3 offset = new Vector3(boxCastSize.x / 2 * movementSTats.HeadWidth, 0f, 0f);
-        Vector3 rayStartL = boxCastOrigin - offset;
-        Vector3 rayStartR = boxCastOrigin + offset;
+        float castDistance = movementSTats.HeadDetectionRayLength;
+        _bumpedHead = Physics.BoxCast(boxCastOrigin, boxCastSize * 0.5f, Vector3.up, out _headHit, Quaternion.identity, castDistance, movementSTats.GroundLayer);
 
-        Debug.DrawRay(rayStartL, Vector3.up * castDistance, rayColor);
-        Debug.DrawRay(rayStartR, Vector3.up * castDistance, rayColor);
-        Debug.DrawRay(rayStartL + Vector3.up * castDistance, Vector3.right * boxCastSize.x * movementSTats.HeadWidth, rayColor);
+        #region Debug Visualization
+
+        if (movementSTats.DebugShowHeadBumpBox)
+        {
+            Color rayColor = _bumpedHead ? Color.green : Color.red;
+
+            Vector3 offset = new Vector3(boxCastSize.x / 2 * movementSTats.HeadWidth, 0f, 0f);
+            Vector3 rayStartL = boxCastOrigin - offset;
+            Vector3 rayStartR = boxCastOrigin + offset;
+
+            Debug.DrawRay(rayStartL, Vector3.up * castDistance, rayColor);
+            Debug.DrawRay(rayStartR, Vector3.up * castDistance, rayColor);
+            Debug.DrawRay(rayStartL + Vector3.up * castDistance, Vector3.right * boxCastSize.x * movementSTats.HeadWidth, rayColor);
+        }
+
+        #endregion
     }
-
-    #endregion
-}
 
 
 
@@ -406,4 +427,90 @@ public class PlayerMovementNew : MonoBehaviour
     }
 
     #endregion
+
+
+
+    #region Gizmos
+
+
+    private void DrawJumpArc(float moveSpeed, Color gizmoColor)
+    {
+        Vector3 startPosition = new Vector3(_feetColl.bounds.center.x, _feetColl.bounds.min.y, _feetColl.bounds.center.z);
+        Vector3 previousPosition = startPosition;
+        float speed = 0f;
+
+        if (movementSTats.DrawRight)
+        {
+            speed = moveSpeed;
+        }
+        else
+        {
+            speed = -moveSpeed;
+        }
+
+        Vector3 velocity = new Vector3(speed, movementSTats.InitialJumpVelocity, 0f);
+
+        Gizmos.color = gizmoColor;
+
+        float timeStep = movementSTats.TimeTillJumpApex / movementSTats.ArcResolution;
+
+        for (int i = 0; i < movementSTats.VisualizationSteps; i++)
+        {
+            float simulationTime = i * timeStep;
+            Vector3 displacement;
+            Vector3 drawPoint;
+
+            if (simulationTime < movementSTats.TimeTillJumpApex) // Ascending
+            {
+                displacement = velocity * simulationTime + 0.5f * new Vector3(0, movementSTats.Gravity, 0) * simulationTime * simulationTime;
+            }
+            else if (simulationTime < movementSTats.TimeTillJumpApex + movementSTats.ApexHangTime) // Apex hang time
+            {
+                float apexTime = movementSTats.TimeTillJumpApex;
+                displacement = velocity * apexTime + 0.5f * new Vector3(0, movementSTats.Gravity, 0) * apexTime * apexTime;
+                displacement += new Vector3(speed, 0f, 0f) * (simulationTime - apexTime); // Horizontal movement only during hang time
+            }
+            else // Descending
+            {
+                float descendTime = simulationTime - (movementSTats.TimeTillJumpApex + movementSTats.ApexHangTime);
+                Vector3 apexDisplacement = velocity * movementSTats.TimeTillJumpApex + 0.5f * new Vector3(0, movementSTats.Gravity, 0) * movementSTats.TimeTillJumpApex * movementSTats.TimeTillJumpApex;
+                Vector3 hangDisplacement = new Vector3(speed, 0f, 0f) * movementSTats.ApexHangTime;
+                Vector3 descendDisplacement = new Vector3(speed, 0f, 0f) * descendTime + 0.5f * new Vector3(0, movementSTats.Gravity, 0) * descendTime * descendTime;
+
+                displacement = apexDisplacement + hangDisplacement + descendDisplacement;
+            }
+
+            drawPoint = startPosition + displacement;
+
+            if (movementSTats.StopOnCollision)
+            {
+                RaycastHit hit;
+                if (Physics.Raycast(previousPosition, drawPoint - previousPosition, out hit, Vector3.Distance(previousPosition, drawPoint), movementSTats.GroundLayer))
+                {
+                    Gizmos.DrawLine(previousPosition, hit.point);
+                    break;
+                }
+            }
+
+            Gizmos.DrawLine(previousPosition, drawPoint);
+            previousPosition = drawPoint;
+        }
+    }
+
+
+
+
+
+
+    #endregion
+
+
+
+
+
+
+
+
+
+
 }
