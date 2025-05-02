@@ -1477,6 +1477,9 @@ MonoBehaviour:
   movementSTats: {fileID: 11400000, guid: 1916986a904ba2c4ab4de6b555fb902e, type: 2}
   _feetColl: {fileID: 2810122}
   _bodyColl: {fileID: 645607407}
+  _dashSpeed: 55
+  _dashDuration: 0.12
+  _dashCooldown: 0.5
   _isGrounded: 0
 --- !u!54 &1653516711
 Rigidbody:

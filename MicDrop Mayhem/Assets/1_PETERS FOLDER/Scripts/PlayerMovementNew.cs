@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using Unity.Android.Gradle.Manifest;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 
 public class PlayerMovementNew : MonoBehaviour
@@ -16,6 +18,14 @@ public class PlayerMovementNew : MonoBehaviour
     // Movement variables
     private Vector3 _moveVelocity;
     private bool _isFacingRight;
+
+    [Header("Dash Settings")]
+    [SerializeField] private float _dashSpeed = 20f;  
+    [SerializeField] private float _dashDuration = 0.2f; 
+    [SerializeField] private float _dashCooldown = 0.5f;
+    private bool _isDashing;
+    private float _lastDashTime;
+
 
     // Collision check variables
     private RaycastHit _groundHit;
@@ -56,11 +66,18 @@ public class PlayerMovementNew : MonoBehaviour
         _rb.constraints = RigidbodyConstraints.FreezeRotation;
     }
 
-    private void Update()
+   private void Update()
+{
+    CountTimers();
+    JumpChecks();
+    
+    // Direct keyboard input check - works without Input System
+    if (Keyboard.current != null && Keyboard.current.leftShiftKey.wasPressedThisFrame)
     {
-        CountTimers();
-        JumpChecks();
+        TryDash();
     }
+}
+
 
     private void FixedUpdate()
     {
@@ -77,6 +94,19 @@ public class PlayerMovementNew : MonoBehaviour
         {
             Move(movementSTats.AirAcceleration, movementSTats.AirDeceleration, input);
         }
+
+         // Direct keyboard input check - works without Input System
+        if (UnityEngine.InputSystem.Keyboard.current != null && Keyboard.current.leftShiftKey.wasPressedThisFrame)
+        {
+            TryDash();
+        }
+
+
+
+
+
+
+
     }
 
 
@@ -93,31 +123,69 @@ public class PlayerMovementNew : MonoBehaviour
 
     }
 
-    #region Movement
+    
+#region Movement
 
 
 
-    [Obsolete]
-    private void Move(float acceleration, float deceleration, Vector3 moveInput)
+private void Move(float acceleration, float deceleration, Vector3 moveInput)
+{
+    if (_isDashing) return; // Skip movement during dash
+
+    if (moveInput != Vector3.zero)
     {
-        if (moveInput != Vector3.zero)
-        {
-            TurnCheck(moveInput);
+        TurnCheck(moveInput);
 
-            Vector3 targetVelocity = InputManagerNew.RunIsHeld ?
-                moveInput * movementSTats.MaxRunSpeed :
-                moveInput * movementSTats.MaxWalkSpeed;
-
-            _moveVelocity = Vector3.Lerp(_moveVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);
-            _rb.velocity = new Vector3(_moveVelocity.x, _rb.velocity.y, 0f); // lock Z axis
-        }
-        else
-        {
-            _moveVelocity = Vector3.Lerp(_moveVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
-            _rb.velocity = new Vector3(_moveVelocity.x, _rb.velocity.y, 0f);
-        }
+        // Normal walking (no run)
+        Vector3 targetVelocity = moveInput * movementSTats.MaxWalkSpeed;
+        _moveVelocity = Vector3.Lerp(_moveVelocity, targetVelocity, acceleration * Time.fixedDeltaTime);
+        _rb.linearVelocity = new Vector3(_moveVelocity.x, _rb.linearVelocity.y, 0f); // Lock Z-axis
     }
+    else
+    {
+        _moveVelocity = Vector3.Lerp(_moveVelocity, Vector3.zero, deceleration * Time.fixedDeltaTime);
+        _rb.linearVelocity = new Vector3(_moveVelocity.x, _rb.linearVelocity.y, 0f);
+    }
+}
 
+// Call this from input (e.g., when "Run" button is pressed)
+public void TryDash()
+{
+    if (Time.time < _lastDashTime + _dashCooldown || _isDashing) 
+        return;
+
+    Vector3 dashDirection = _isFacingRight ? Vector3.right : Vector3.left;
+    StartCoroutine(DashRoutine(dashDirection));
+}
+
+private IEnumerator DashRoutine(Vector3 direction)
+{
+    _isDashing = true;
+    _lastDashTime = Time.time;
+    
+    // Store current Y velocity before dashing
+    float currentYVelocity = _rb.linearVelocity.y;
+    
+    // Apply dash only to X axis
+    _rb.linearVelocity = new Vector3(
+        direction.x * _dashSpeed,
+        currentYVelocity,  // Maintain existing vertical velocity
+        0f
+    );
+
+    yield return new WaitForSeconds(_dashDuration);
+    
+    // Smooth dash exit (optional)
+    _rb.linearVelocity = new Vector3(
+        _rb.linearVelocity.x * 0.3f,  // Reduce x velocity after dash
+        _rb.linearVelocity.y,
+        0f
+    );
+    
+    _isDashing = false;
+}
+
+// Keep TurnCheck/Turn methods unchanged
     private void TurnCheck(Vector3 moveInput)
     {
         if (_isFacingRight && moveInput.x < 0)
