@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 
-public class PlayerMovementNew : MonoBehaviour
+public class Player2MovementNew : MonoBehaviour
 {
     [Header("References")]
     public PlayerMovementSTats movementSTats;

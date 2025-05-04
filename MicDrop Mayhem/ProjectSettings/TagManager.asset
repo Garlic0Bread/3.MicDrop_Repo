@@ -2,10 +2,11 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
+  serializedVersion: 3
   tags:
   - Player1
   - Player2
+  - Damageable
   layers:
   - Default
   - TransparentFX
@@ -17,7 +18,7 @@ TagManager:
   - Player2
   - Ground
   - Wall
-  - 
+  - Attacks
   - 
   - 
   - 
@@ -49,3 +50,5 @@ TagManager:
   - name: Foreground
     uniqueID: 3203681841
     locked: 0
+  m_RenderingLayers:
+  - Default
