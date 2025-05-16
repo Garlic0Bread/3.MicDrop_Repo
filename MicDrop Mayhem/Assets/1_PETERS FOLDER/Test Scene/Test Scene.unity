@@ -1464,9 +1464,10 @@ GameObject:
   - component: {fileID: 1472783397}
   - component: {fileID: 1472783401}
   - component: {fileID: 1472783402}
-  - component: {fileID: 1472783404}
-  - component: {fileID: 1472783405}
   - component: {fileID: 1472783406}
+  - component: {fileID: 1472783405}
+  - component: {fileID: 1472783404}
+  - component: {fileID: 1472783407}
   m_Layer: 7
   m_Name: P2_Player
   m_TagString: Damageable
@@ -1685,7 +1686,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   comboSequence:
   - name: 
-    damage: 0
+    damage: 10
     knockbackForce: 5
     knockbackUpwardForce: 0
     minKnockbackForce: 0.1
@@ -1695,7 +1696,7 @@ MonoBehaviour:
     recoveryTime: 0.3
     hitbox: {fileID: 695225731}
   - name: 
-    damage: 0
+    damage: 15
     knockbackForce: 5
     knockbackUpwardForce: 0
     minKnockbackForce: 0.1
@@ -1705,7 +1706,7 @@ MonoBehaviour:
     recoveryTime: 0.3
     hitbox: {fileID: 695225731}
   - name: 
-    damage: 0
+    damage: 20
     knockbackForce: 5
     knockbackUpwardForce: 0
     minKnockbackForce: 0.1
@@ -1756,6 +1757,19 @@ MonoBehaviour:
   minTimeBetweenAttacks: 0.1
   drawHitboxGizmos: 1
   debugLogs: 0
+--- !u!114 &1472783407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1472783396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19d065b0e1f6f7488d9811c4eae2bfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
 --- !u!1 &1554930999
 GameObject:
   m_ObjectHideFlags: 0
@@ -1909,6 +1923,7 @@ GameObject:
   - component: {fileID: 1653516714}
   - component: {fileID: 1653516715}
   - component: {fileID: 1653516716}
+  - component: {fileID: 1653516717}
   m_Layer: 6
   m_Name: P1_Player
   m_TagString: Damageable
@@ -2092,17 +2107,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   comboSequence:
   - name: 
-    damage: 0
-    knockbackForce: 5
-    knockbackUpwardForce: 0
-    minKnockbackForce: 0.1
-    knockbackDirection: {x: 0, y: 0, z: 0}
-    startupTime: 0
-    activeTime: 0.1
-    recoveryTime: 0.3
-    hitbox: {fileID: 1328002532}
-  - name: 
-    damage: 0
+    damage: 10
     knockbackForce: 5
     knockbackUpwardForce: 0
     minKnockbackForce: 0.1
@@ -2112,7 +2117,17 @@ MonoBehaviour:
     recoveryTime: 0.3
     hitbox: {fileID: 1328002532}
   - name: 
-    damage: 0
+    damage: 15
+    knockbackForce: 5
+    knockbackUpwardForce: 0
+    minKnockbackForce: 0.1
+    knockbackDirection: {x: 5, y: 0, z: 0}
+    startupTime: 0
+    activeTime: 0.1
+    recoveryTime: 0.3
+    hitbox: {fileID: 1328002532}
+  - name: 
+    damage: 20
     knockbackForce: 5
     knockbackUpwardForce: 0
     minKnockbackForce: 0.1
@@ -2198,6 +2213,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.74, y: 0.99999994, z: 0.89}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1653516717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1653516707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19d065b0e1f6f7488d9811c4eae2bfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
 --- !u!1 &1657143019
 GameObject:
   m_ObjectHideFlags: 0

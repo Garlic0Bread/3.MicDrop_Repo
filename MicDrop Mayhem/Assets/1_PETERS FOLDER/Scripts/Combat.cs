@@ -247,14 +247,23 @@ public class Combat : MonoBehaviour
         Time.timeScale = 1f;
     }
 
-    private void OnTriggerEnter(Collider other)
+private void OnTriggerEnter(Collider other)
+{
+    if (other.CompareTag("Damageable"))
     {
-        if (other.CompareTag("Damageable"))
+        Attack currentAttack = comboSequence[currentComboStep];
+        PlayerHealth health = other.GetComponent<PlayerHealth>();
+        if (health != null)
         {
-            Attack currentAttack = comboSequence[currentComboStep];
-            ApplyKnockback(other.gameObject, currentAttack);
+            health.TakeDamage(
+                (int)currentAttack.damage,
+                transform.TransformDirection(currentAttack.knockbackDirection),
+                currentAttack.knockbackForce
+            );
         }
+        ApplyKnockback(other.gameObject, currentAttack);
     }
+}
 
     private void OnDrawGizmos()
     {
