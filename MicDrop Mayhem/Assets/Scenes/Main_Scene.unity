@@ -273,6 +273,7 @@ GameObject:
   - component: {fileID: 231337263}
   - component: {fileID: 231337262}
   - component: {fileID: 231337265}
+  - component: {fileID: 231337266}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -347,13 +348,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 231337261}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.99112433, z: -0.13293853, w: 0}
-  m_LocalPosition: {x: 0, y: 26.2, z: -60.1}
+  m_LocalRotation: {x: -0, y: 0.9753424, z: -0.2206974, w: 0}
+  m_LocalPosition: {x: 0, y: 30, z: -66}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 15.279, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 25.5, y: 180, z: 0}
 --- !u!114 &231337265
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -398,6 +399,25 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &231337266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 231337261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0fcaa1b606904d47ba3c4aeff636d9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player1: {fileID: 1653516707}
+  player2: {fileID: 1472783396}
+  smoothSpeed: 5
+  zoomFactor: -0.25
+  minZoom: 35
+  maxZoom: 68
+  zoomSpeed: 5
 --- !u!1 &294138372
 GameObject:
   m_ObjectHideFlags: 0
@@ -1673,13 +1693,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1472783396}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 18.24, y: 10.59, z: -90}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 20.426367, y: -12.728027, z: -29.900002}
   m_LocalScale: {x: 2, y: 3.5, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1657143020}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1977424772}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1472783401
 MonoBehaviour:
@@ -2148,13 +2168,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1653516707}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 11.87, y: 10.59, z: -90}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 14.056368, y: -12.728027, z: -29.900002}
   m_LocalScale: {x: 2, y: 3.5, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8413078}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1977424772}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1653516710
 MonoBehaviour:
@@ -2462,6 +2482,39 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8413078}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1977424771
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1977424772}
+  m_Layer: 0
+  m_Name: Players
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1977424772
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1977424771}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.1863675, y: 23.318027, z: -60.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1653516709}
+  - {fileID: 1472783400}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2020428181
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2652,12 +2705,11 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 391392664}
-  - {fileID: 231337264}
   - {fileID: 2020428181}
+  - {fileID: 231337264}
   - {fileID: 294138373}
   - {fileID: 1554931003}
   - {fileID: 747712647}
   - {fileID: 926397785}
   - {fileID: 927751877}
-  - {fileID: 1653516709}
-  - {fileID: 1472783400}
+  - {fileID: 1977424772}
