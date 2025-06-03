@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4437480284649163444}
   - component: {fileID: 8300931898523966990}
   m_Layer: 0
-  m_Name: Death vfx
+  m_Name: Death_Vfx
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
