@@ -1,7 +1,8 @@
 using System;
 using System.Collections;
-using Unity.Android.Gradle.Manifest;
+//using Unity.Android.Gradle.Manifest;
 using Unity.VisualScripting;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
@@ -60,6 +61,17 @@ public class PlayerMovementNew : MonoBehaviour
     private RaycastHit _headHit;
     private bool _bumpedHead;
 
+    [Header("Dash Settings")]
+    // General Side Step variables
+    public int _sideStepAmount = 90;
+
+    // Forward Side Step variables
+    private Vector3 _originalPosition_forward;
+    private Vector3 _sideStepPosition_forward;
+
+    // Backward Side Step variables
+    private Vector3 _originalPosition_backward;
+    private Vector3 _sideStepPosition_backward;
 
     public bool IsInHitStun { get; private set; }
 
@@ -112,10 +124,29 @@ public class PlayerMovementNew : MonoBehaviour
             combat.StartAttack();
         }
 
+        // Side Step Input Handling
+        if (_inputManager.PlayerInput.actions["Side Step Forward"].WasPressedThisFrame())
+        {
+            Debug.Log("Side Step Forward Pressed");
+            TrySideStep_Forward();
+        }
 
+        if (_inputManager.PlayerInput.actions["Side Step Backward"].WasPressedThisFrame())
+        {
+            Debug.Log("Side Step Backward Pressed");
+            TrySideStep_Backward();
+        }
 
-        // Keep characters locked to 2D plane
-        transform.position = new Vector3(transform.position.x, transform.position.y, -90);
+        // Forward Side Step Position Calculation
+        _originalPosition_forward = this.gameObject.transform.position; // Store original position for side step
+
+        _sideStepPosition_forward = _originalPosition_forward + new Vector3(0, 0, + _sideStepAmount); // Calculate side step position based on facing direction
+
+        // Backward Side Step Position Calculation
+        _originalPosition_backward = this.gameObject.transform.position; // Store original position for side step
+
+        _sideStepPosition_backward = _originalPosition_backward + new Vector3(0, 0, - _sideStepAmount); // Calculate side step position based on facing direction
+        //transform.position = new Vector3(transform.position.x, transform.position.y, -90); // Keep characters locked to 2D plane... NOT BEING USED ANYMORE
     }
 
     private void FixedUpdate()
@@ -248,6 +279,25 @@ public class PlayerMovementNew : MonoBehaviour
         _isFacingRight = turnRight;
         transform.Rotate(0f, 180f, 0f);
     }
+
+    private void TrySideStep_Forward()
+    {
+        this.gameObject.transform.position = _sideStepPosition_forward; // Move to side step position
+    }
+
+    private void TrySideStep_Backward()
+    {
+        this.gameObject.transform.position = _sideStepPosition_backward; // Move to side step position
+    }
+
+    //IEnumerator SideStep()
+    //{
+    //    this.gameObject.transform.position = _sideStepPosition; // Move to side step position
+
+    //    yield return new WaitForSeconds(0.2f); // Adjust duration as needed
+
+    //    this.gameObject.transform.position = _originalPosition; // Return to original position after side step
+    //}
 
     #endregion
 
