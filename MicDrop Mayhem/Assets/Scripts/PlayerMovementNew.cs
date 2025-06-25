@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using Unity.Android.Gradle.Manifest;
+//using Unity.Android.Gradle.Manifest;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -63,10 +63,17 @@ public class PlayerMovementNew : MonoBehaviour
 
     public bool IsInHitStun { get; private set; }
 
+    [Header("Side Step Settings")]
+    // General Side Step Variables
+    public int _sideStepAmount = 20; // Amount of units the player side steps along the z-axis
 
+    // Forward Side Step Variables
+    private Vector3 _originalPosition_forward; // Stores the original position before forward side step
+    private Vector3 _sideStepPosition_forward; // Stores the position after forward side step
 
-
-
+    // Backward Side Step Variables
+    private Vector3 _originalPosition_backward; // Stores the original position before backward side step
+    private Vector3 _sideStepPosition_backward; // Stores the position after backward side step
 
 
     [Obsolete]
@@ -112,10 +119,30 @@ public class PlayerMovementNew : MonoBehaviour
             combat.StartAttack();
         }
 
+        // Side Step Input Handling
+        if (_inputManager.PlayerInput.actions["Side Step Forward"].WasPressedThisFrame())
+        {
+            Debug.Log("Side Step Forward Pressed");
+            TrySideStep_Forward();
+        }
 
+        if (_inputManager.PlayerInput.actions["Side Step Backward"].WasPressedThisFrame())
+        {
+            Debug.Log("Side Step Backward Pressed");
+            TrySideStep_Backward();
+        }
 
-        // Keep characters locked to 2D plane
-        transform.position = new Vector3(transform.position.x, transform.position.y, -90);
+        // Forward Side Step Position Calculation
+        _originalPosition_forward = this.gameObject.transform.position; // Store the original position for side step
+
+        _sideStepPosition_forward = _originalPosition_forward + new Vector3(0f, 0f, + _sideStepAmount); // Calculate the side step position
+
+        // Backward Side Step Position Calculation
+        _originalPosition_backward = this.gameObject.transform.position; // Store the original position for side step
+
+        _sideStepPosition_backward = _originalPosition_backward + new Vector3(0f, 0f, - _sideStepAmount); // Calculate the side step position
+
+        //transform.position = new Vector3(transform.position.x, transform.position.y, -90); // Keep characters locked to 2D plane.. NOT BEING USED ANYMORE
     }
 
     private void FixedUpdate()
@@ -247,6 +274,16 @@ public class PlayerMovementNew : MonoBehaviour
     {
         _isFacingRight = turnRight;
         transform.Rotate(0f, 180f, 0f);
+    }
+
+    private void TrySideStep_Forward()
+    {
+        this.gameObject.transform.position = _sideStepPosition_forward; // Move player to side step position   
+    }
+
+    private void TrySideStep_Backward()
+    {
+        this.gameObject.transform.position = _sideStepPosition_backward; // Move player to side step position   
     }
 
     #endregion

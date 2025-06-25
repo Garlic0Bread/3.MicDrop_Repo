@@ -261,16 +261,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 0.6832596, z: 1}
   m_Center: {x: 0, y: 0.0027203562, z: 0}
---- !u!1 &133321848 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -208595431880416365, guid: fd4c0da0acad13b41938690ea210ed76, type: 3}
-  m_PrefabInstance: {fileID: 2020428181}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &167271414 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 281855664364225751, guid: fd4c0da0acad13b41938690ea210ed76, type: 3}
-  m_PrefabInstance: {fileID: 2020428181}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &231337261
 GameObject:
   m_ObjectHideFlags: 0
@@ -492,16 +482,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioSource: {fileID: 1623862068}
-  ObjToPulse:
-  - {fileID: 133321848}
-  - {fileID: 167271414}
-  - {fileID: 465243054}
+  objToPulse: []
   intensity: 3.5
   responseSpeed: 0.1
   minThreshold: 0.005
   freqRange: 40
   sensitivityMultiplier: 100
   smoothTime: 0.075
+  velocity: []
+  bpm: 0
+  beatThreshold: 0.05
+  beatCooldown: 0.2
 --- !u!4 &356335531
 Transform:
   m_ObjectHideFlags: 0
@@ -593,11 +584,6 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
---- !u!1 &465243054 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -2045257923548263128, guid: fd4c0da0acad13b41938690ea210ed76, type: 3}
-  m_PrefabInstance: {fileID: 2020428181}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &541899038
 GameObject:
   m_ObjectHideFlags: 0
@@ -2396,6 +2382,7 @@ MonoBehaviour:
   _dashDuration: 0.12
   _dashCooldown: 0.5
   _isGrounded: 0
+  _sideStepAmount: 20
 --- !u!54 &1653516711
 Rigidbody:
   m_ObjectHideFlags: 0
