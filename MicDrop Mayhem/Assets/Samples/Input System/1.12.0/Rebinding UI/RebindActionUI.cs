@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine.UI;
+//using TMPro; // Not working for some reason??
 
 ////TODO: localization support
 
@@ -236,6 +237,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
         /// </summary>
         public void StartInteractiveRebind()
         {
+            m_Action.action.Disable(); // Disable the action while rebinding to avoid issues with the action being triggered while rebinding.
             if (!ResolveActionAndBinding(out var action, out var bindingIndex))
                 return;
 
@@ -254,6 +256,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 
         private void PerformInteractiveRebind(InputAction action, int bindingIndex, bool allCompositeParts = false)
         {
+            action.Disable(); // Ensure the action is disabled while rebinding to avoid issues with the action being triggered while rebinding.
             m_RebindOperation?.Cancel(); // Will null out m_RebindOperation.
 
             void CleanUp()
@@ -261,6 +264,8 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
                 m_RebindOperation?.Dispose();
                 m_RebindOperation = null;
                 action.Enable();
+                m_Action.action.Enable(); // Re-enable the action after rebinding.
+                SaveActionBinding(); // Save the new binding to PlayerPrefs.
             }
 
             //Fixes the "InvalidOperationException: Cannot rebind action x while it is enabled" error
@@ -434,6 +439,27 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
             {
                 var action = m_Action?.action;
                 m_ActionLabel.text = action != null ? action.name : string.Empty;
+            }
+        }
+
+        private void Start()
+        {
+            LoadActionBinding();
+        }
+
+        private void SaveActionBinding()
+        {
+            var currentBindings = actionReference.action.actionMap.SaveBindingOverridesAsJson();
+            PlayerPrefs.SetString(m_Action.action.name + bindingId, currentBindings);
+        }
+        
+        private void LoadActionBinding()
+        {
+            var savedBindings = PlayerPrefs.GetString(m_Action.action.name + bindingId);
+            
+            if (!string.IsNullOrEmpty(savedBindings))
+            {
+                m_Action.action.actionMap.LoadBindingOverridesFromJson(savedBindings);
             }
         }
 
