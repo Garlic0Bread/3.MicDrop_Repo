@@ -12,16 +12,17 @@ public class PlayerMovementNew : MonoBehaviour
     public PlayerMovementSTats movementSTats;
     [SerializeField] private Collider _feetColl;
     [SerializeField] private Collider _bodyColl;
-    [SerializeField] private int _playerIndex = 0; // Added player index
+    [SerializeField] private int _playerIndex = 0;
     public Combat combat;
 
+    // Animator reference
+    private Animator _animator;
+
     private KnockbackReceiver knockbackReceiver;
-
-
-
     private Rigidbody _rb;
     private InputManagerNew _inputManager;
     private PlayerInput playerInput;
+
     // Movement variables
     private Vector3 _moveVelocity;
     private bool _isFacingRight;
@@ -60,32 +61,32 @@ public class PlayerMovementNew : MonoBehaviour
     private RaycastHit _headHit;
     private bool _bumpedHead;
 
-
     public bool IsInHitStun { get; private set; }
 
     [Header("Side Step Settings")]
-    // General Side Step Variables
-    public int _sideStepAmount = 20; // Amount of units the player side steps along the z-axis
+    public int _sideStepAmount = 20;
 
     // Forward Side Step Variables
-    private Vector3 _originalPosition_forward; // Stores the original position before forward side step
-    private Vector3 _sideStepPosition_forward; // Stores the position after forward side step
+    private Vector3 _originalPosition_forward;
+    private Vector3 _sideStepPosition_forward;
 
     // Backward Side Step Variables
-    private Vector3 _originalPosition_backward; // Stores the original position before backward side step
-    private Vector3 _sideStepPosition_backward; // Stores the position after backward side step
-
+    private Vector3 _originalPosition_backward;
+    private Vector3 _sideStepPosition_backward;
 
     [Obsolete]
     private void Awake()
     {
-        //combat = GetComponent<Combat>();
-
         _isFacingRight = true;
         _rb = GetComponent<Rigidbody>();
         _rb.constraints = RigidbodyConstraints.FreezeRotation;
 
-
+        // Get Animator component
+        _animator = GetComponent<Animator>();
+        if (_animator == null)
+        {
+            Debug.LogWarning("Animator component not found on player!");
+        }
 
         knockbackReceiver = GetComponent<KnockbackReceiver>();
 
@@ -97,16 +98,13 @@ public class PlayerMovementNew : MonoBehaviour
         }
     }
 
-
     private void Update()
     {
-        if (_inputManager == null || IsInHitStun) return; // Skip input if in hit stun
-
-
-        if (_inputManager == null) return;
+        if (_inputManager == null || IsInHitStun) return;
 
         CountTimers();
         JumpChecks();
+        UpdateAnimatorParameters(); // Update animation parameters every frame
 
         // Handle dash input through input manager
         if (_inputManager.PlayerInput.actions["Dash"].WasPressedThisFrame())
@@ -133,24 +131,17 @@ public class PlayerMovementNew : MonoBehaviour
         }
 
         // Forward Side Step Position Calculation
-        _originalPosition_forward = this.gameObject.transform.position; // Store the original position for side step
-
-        _sideStepPosition_forward = _originalPosition_forward + new Vector3(0f, 0f, + _sideStepAmount); // Calculate the side step position
+        _originalPosition_forward = this.gameObject.transform.position;
+        _sideStepPosition_forward = _originalPosition_forward + new Vector3(0f, 0f, +_sideStepAmount);
 
         // Backward Side Step Position Calculation
-        _originalPosition_backward = this.gameObject.transform.position; // Store the original position for side step
-
-        _sideStepPosition_backward = _originalPosition_backward + new Vector3(0f, 0f, - _sideStepAmount); // Calculate the side step position
-
-        //transform.position = new Vector3(transform.position.x, transform.position.y, -90); // Keep characters locked to 2D plane.. NOT BEING USED ANYMORE
+        _originalPosition_backward = this.gameObject.transform.position;
+        _sideStepPosition_backward = _originalPosition_backward + new Vector3(0f, 0f, -_sideStepAmount);
     }
 
     private void FixedUpdate()
     {
-        if (_inputManager == null || IsInHitStun) return; // Skip physics if in hit stun
-
-
-        if (_inputManager == null) return;
+        if (_inputManager == null || IsInHitStun) return;
 
         CollisionChecks();
         Jump();
@@ -165,28 +156,45 @@ public class PlayerMovementNew : MonoBehaviour
         {
             Move(movementSTats.AirAcceleration, movementSTats.AirDeceleration, input);
         }
-
     }
 
+    #region Animation
 
+    private void UpdateAnimatorParameters()
+    {
+        if (_animator == null) return;
 
+        // Update moveVelocity for Running transitions
+        float horizontalSpeed = Mathf.Abs(_rb.linearVelocity.x);
+        _animator.SetFloat("moveVelocity", horizontalSpeed);
 
+        // Update isGrounded parameter
+        _animator.SetBool("isGrounded", _isGrounded);
 
+        // Update isFalling parameter
+        _animator.SetBool("isFalling", _isFalling);
 
+        // Set jump pressed trigger when jump is initiated
+        if (_inputManager.JumpWasPressed && (_isGrounded || _coyoteTimer > 0f || _numberOfJumpsUsed < movementSTats.NumberOfJumpsAllowed))
+        {
+            _animator.SetBool("isJumpPressed", true);
+        }
+        else
+        {
+            _animator.SetBool("isJumpPressed", false);
+        }
 
+        // Additional jump trigger for double jumps
+        if (_inputManager.JumpWasPressed && _isFalling && _numberOfJumpsUsed < movementSTats.NumberOfJumpsAllowed - 1)
+        {
+            // This handles the JumpDown-to-JumpUp transition for double jumps
+            _animator.SetBool("isJumpPressed", true);
+        }
+    }
 
+    #endregion
 
     #region Combat
-
-
-
-
-
-
-
-
-
-
 
     public void OnHit()
     {
@@ -195,15 +203,9 @@ public class PlayerMovementNew : MonoBehaviour
         {
             knockbackReceiver.ApplyHitStun(knockbackReceiver.hitStunDuration);
         }
-        // Other hit reaction code...
     }
 
-
-
     #endregion
-
-
-
 
     #region Movement
 
@@ -278,12 +280,12 @@ public class PlayerMovementNew : MonoBehaviour
 
     private void TrySideStep_Forward()
     {
-        this.gameObject.transform.position = _sideStepPosition_forward; // Move player to side step position   
+        this.gameObject.transform.position = _sideStepPosition_forward;
     }
 
     private void TrySideStep_Backward()
     {
-        this.gameObject.transform.position = _sideStepPosition_backward; // Move player to side step position   
+        this.gameObject.transform.position = _sideStepPosition_backward;
     }
 
     #endregion
@@ -453,36 +455,36 @@ public class PlayerMovementNew : MonoBehaviour
     #region Collision Checks
 
     private void IsGrounded()
-{
-    // BoxCast (original check)
-    Vector3 boxOrigin = new Vector3(_feetColl.bounds.center.x, _feetColl.bounds.min.y - 0.01f, _feetColl.bounds.center.z);
-    Vector3 halfExtents = new Vector3(_feetColl.bounds.extents.x * movementSTats.HeadWidth, 0.1f, _feetColl.bounds.extents.z);
-    float distance = movementSTats.GroundDetectionRayLength;
-
-    _isGrounded = Physics.BoxCast(boxOrigin, halfExtents * 0.5f, Vector3.down, out _groundHit, 
-                                Quaternion.identity, distance, movementSTats.GroundLayer);
-
-    // Add 3 Raycasts (left, center, right) for edge detection
-    float raySpacing = _feetColl.bounds.extents.x * 0.8f; // Adjust spacing as needed
-    Vector3 rayStartCenter = boxOrigin;
-    Vector3 rayStartLeft = boxOrigin - new Vector3(raySpacing, 0, 0);
-    Vector3 rayStartRight = boxOrigin + new Vector3(raySpacing, 0, 0);
-
-    bool centerRay = Physics.Raycast(rayStartCenter, Vector3.down, distance, movementSTats.GroundLayer);
-    bool leftRay = Physics.Raycast(rayStartLeft, Vector3.down, distance, movementSTats.GroundLayer);
-    bool rightRay = Physics.Raycast(rayStartRight, Vector3.down, distance, movementSTats.GroundLayer);
-
-    // Final grounded check: Combine BoxCast and Raycasts
-    _isGrounded = _isGrounded || (centerRay || leftRay || rightRay);
-
-    // Debug Visualizations
-    if (movementSTats.DebugShowIsGroundedBox)
     {
-        Debug.DrawRay(rayStartCenter, Vector3.down * distance, Color.blue);
-        Debug.DrawRay(rayStartLeft, Vector3.down * distance, Color.blue);
-        Debug.DrawRay(rayStartRight, Vector3.down * distance, Color.blue);
+        // BoxCast (original check)
+        Vector3 boxOrigin = new Vector3(_feetColl.bounds.center.x, _feetColl.bounds.min.y - 0.01f, _feetColl.bounds.center.z);
+        Vector3 halfExtents = new Vector3(_feetColl.bounds.extents.x * movementSTats.HeadWidth, 0.1f, _feetColl.bounds.extents.z);
+        float distance = movementSTats.GroundDetectionRayLength;
+
+        _isGrounded = Physics.BoxCast(boxOrigin, halfExtents * 0.5f, Vector3.down, out _groundHit,
+                                    Quaternion.identity, distance, movementSTats.GroundLayer);
+
+        // Add 3 Raycasts (left, center, right) for edge detection
+        float raySpacing = _feetColl.bounds.extents.x * 0.8f;
+        Vector3 rayStartCenter = boxOrigin;
+        Vector3 rayStartLeft = boxOrigin - new Vector3(raySpacing, 0, 0);
+        Vector3 rayStartRight = boxOrigin + new Vector3(raySpacing, 0, 0);
+
+        bool centerRay = Physics.Raycast(rayStartCenter, Vector3.down, distance, movementSTats.GroundLayer);
+        bool leftRay = Physics.Raycast(rayStartLeft, Vector3.down, distance, movementSTats.GroundLayer);
+        bool rightRay = Physics.Raycast(rayStartRight, Vector3.down, distance, movementSTats.GroundLayer);
+
+        // Final grounded check: Combine BoxCast and Raycasts
+        _isGrounded = _isGrounded || (centerRay || leftRay || rightRay);
+
+        // Debug Visualizations
+        if (movementSTats.DebugShowIsGroundedBox)
+        {
+            Debug.DrawRay(rayStartCenter, Vector3.down * distance, Color.blue);
+            Debug.DrawRay(rayStartLeft, Vector3.down * distance, Color.blue);
+            Debug.DrawRay(rayStartRight, Vector3.down * distance, Color.blue);
+        }
     }
-}
 
     private void BumpedHead()
     {
@@ -514,7 +516,6 @@ public class PlayerMovementNew : MonoBehaviour
     }
 
     #endregion
-
 
 
     #region Gizmos

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Combat : MonoBehaviour
 {
@@ -21,15 +22,23 @@ public class Combat : MonoBehaviour
         public bool disableMovement = true;
         public bool disableGravity = true;
 
-        [Header("Timing")]
+        [Header("Timing - Now synced with animation")]
         public float startupTime = 0.1f;
         public float activeTime = 0.2f;
         public float recoveryTime = 0.3f;
+
+        [Header("Animation Sync")]
+        public string animationName;
+        public float animationHitboxStart = 0.2f; // When in animation hitbox activates
+        public float animationHitboxEnd = 0.4f;   // When in animation hitbox deactivates
 
         [Header("Hitboxes")]
         public BoxCollider hitbox;
         public BoxCollider upHitbox;
         public BoxCollider downHitbox;
+
+        // Animation event tracking
+        [System.NonSerialized] public bool hitboxActive = false;
     }
 
     [Header("Combo Settings")]
@@ -51,46 +60,132 @@ public class Combat : MonoBehaviour
     private int comboHits = 0;
     private float lastAttackTime = 0f;
     private float currentAttackTimer = 0f;
+    private float animationTimer = 0f;
     private AttackState attackState = AttackState.None;
     private InputManagerNew inputManager;
+    private Animator animator;
+    private Dictionary<string, int> animationHashes = new Dictionary<string, int>();
 
     public enum AttackState { None, Startup, Active, Recovery }
-
-    
-
-
-
 
     private void Awake()
     {
         inputManager = GetComponent<InputManagerNew>();
+        animator = GetComponent<Animator>();
+
+        // Cache animation hashes for better performance
+        foreach (Attack attack in comboSequence)
+        {
+            if (!string.IsNullOrEmpty(attack.animationName))
+            {
+                animationHashes[attack.animationName] = Animator.StringToHash(attack.animationName);
+            }
+        }
+
         DisableAllHitboxes();
     }
 
+    private void DebugComboState()
+    {
+        if (!debugLogs) return;
+
+        Debug.Log($"Combo State - Step: {currentComboStep}, " +
+                  $"State: {attackState}, " +
+                  $"Timer: {currentAttackTimer:F2}, " +
+                  $"LastAttack: {Time.time - lastAttackTime:F2}s ago, " +
+                  $"ComboWindow: {comboWindow}, " +
+                  $"CanCombo: {CanCombo()}");
+    }
+
+    // Call this in Update():
     private void Update()
     {
         UpdateAttackState();
         CheckComboReset();
+        UpdateCombatAnimations();
+        UpdateAnimationHitboxTiming();// NEW: Sync hitboxes with animation
+        DebugComboState(); // ADD THIS LINE
+    }
+
+
+    // NEW METHOD: Sync hitbox activation with animation timing
+    private void UpdateAnimationHitboxTiming()
+    {
+        if (attackState == AttackState.None) return;
+
+        Attack currentAttack = comboSequence[currentComboStep];
+        animationTimer += Time.deltaTime;
+
+        // Enable hitbox based on animation timing
+        if (animationTimer >= currentAttack.animationHitboxStart &&
+            animationTimer <= currentAttack.animationHitboxEnd &&
+            !currentAttack.hitboxActive)
+        {
+            EnableCorrectHitbox(currentAttack);
+            currentAttack.hitboxActive = true;
+            if (debugLogs) Debug.Log($"Hitbox ACTIVATED for {currentAttack.name}");
+        }
+        // Disable hitbox based on animation timing
+        else if (animationTimer > currentAttack.animationHitboxEnd && currentAttack.hitboxActive)
+        {
+            DisableAllHitboxes();
+            currentAttack.hitboxActive = false;
+            if (debugLogs) Debug.Log($"Hitbox DEACTIVATED for {currentAttack.name}");
+        }
+    }
+
+    private void UpdateCombatAnimations()
+    {
+        if (animator == null) return;
+
+        bool isFighting = attackState != AttackState.None;
+        animator.SetBool("IsFighting", isFighting);
+        animator.SetInteger("ComboStep", currentComboStep);
+        animator.SetInteger("AttackState", (int)attackState);
     }
 
     public void StartAttack()
     {
-        if (!CanStartAttack()) return;
+        if (!CanStartAttack())
+        {
+            if (debugLogs) Debug.Log("Cannot start attack - conditions not met");
+            return;
+        }
 
         if (attackState == AttackState.None || CanCombo())
         {
             InitializeAttack();
+        }
+        else
+        {
+            if (debugLogs) Debug.Log("Attack input ignored - cannot combo yet");
         }
     }
 
     private void InitializeAttack()
     {
         currentAttackTimer = 0f;
+        animationTimer = 0f; // Reset animation timer
         attackState = AttackState.Startup;
         lastAttackTime = Time.time;
+
+        // Reset all hitbox active states
+        foreach (Attack attack in comboSequence)
+        {
+            attack.hitboxActive = false;
+        }
+
         DisableAllHitboxes();
 
-        if (debugLogs) Debug.Log($"Starting attack: {comboSequence[currentComboStep].name}");
+        // Trigger the specific animation for this combo step
+        Attack currentAttack = comboSequence[currentComboStep];
+        if (!string.IsNullOrEmpty(currentAttack.animationName) && animator != null)
+        {
+            int hash = animationHashes[currentAttack.animationName];
+            animator.Play(hash, -1, 0f);
+        }
+
+        if (debugLogs) Debug.Log($"Starting attack: {currentAttack.name}, Combo Step: {currentComboStep}");
     }
 
     private void UpdateAttackState()
@@ -106,7 +201,7 @@ public class Combat : MonoBehaviour
                 if (currentAttackTimer >= currentAttack.startupTime)
                 {
                     attackState = AttackState.Active;
-                    EnableCorrectHitbox(currentAttack);
+                    // Note: Hitbox is now controlled by animation timing, not state
                 }
                 break;
 
@@ -114,7 +209,9 @@ public class Combat : MonoBehaviour
                 if (currentAttackTimer >= currentAttack.startupTime + currentAttack.activeTime)
                 {
                     attackState = AttackState.Recovery;
+                    // Ensure hitbox is disabled when leaving Active state
                     DisableAllHitboxes();
+                    currentAttack.hitboxActive = false;
                 }
                 break;
 
@@ -128,11 +225,12 @@ public class Combat : MonoBehaviour
         }
     }
 
+    // Rest of your methods remain mostly the same...
     private void EnableCorrectHitbox(Attack attack)
     {
         if (inputManager == null)
         {
-            attack.hitbox.enabled = true;
+            if (attack.hitbox != null) attack.hitbox.enabled = true;
             return;
         }
 
@@ -146,7 +244,7 @@ public class Combat : MonoBehaviour
         {
             attack.downHitbox.enabled = true;
         }
-        else
+        else if (attack.hitbox != null)
         {
             attack.hitbox.enabled = true;
         }
@@ -154,15 +252,22 @@ public class Combat : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (attackState != AttackState.Active || !other.CompareTag("Damageable")) return;
+        // Only process hits if we're in an attack state AND a hitbox is active
+        if (attackState == AttackState.None || !other.CompareTag("Damageable"))
+            return;
 
+        // Check if any hitbox from the current attack is active
         Attack currentAttack = comboSequence[currentComboStep];
+        if (!currentAttack.hitboxActive) return;
+
         PlayerHealth health = other.GetComponent<PlayerHealth>();
         if (health != null)
         {
             ProcessHit(health, currentAttack);
             ApplyHitEffects(other.transform.position);
             comboHits++;
+
+            if (debugLogs) Debug.Log($"Hit landed! Damage: {currentAttack.damage}, Combo Step: {currentComboStep}");
         }
 
         StartCoroutine(HitStopEffect());
@@ -223,8 +328,15 @@ public class Combat : MonoBehaviour
 
     private bool CanStartAttack()
     {
-        return attackState == AttackState.None || 
-              (attackState == AttackState.Recovery && CanCombo());
+        bool canStart = attackState == AttackState.None ||
+                       (attackState == AttackState.Recovery && CanCombo());
+
+        if (debugLogs && !canStart)
+        {
+            Debug.Log($"Cannot start attack - State: {attackState}, CanCombo: {CanCombo()}");
+        }
+
+        return canStart;
     }
 
     public void CancelAttack()
@@ -240,12 +352,33 @@ public class Combat : MonoBehaviour
 
     private bool CanCombo()
     {
-        return Time.time - lastAttackTime <= comboWindow;
+        bool withinComboWindow = Time.time - lastAttackTime <= comboWindow;
+        bool notFirstAttack = currentComboStep > 0; // Can only combo after first attack
+
+        if (debugLogs)
+        {
+            Debug.Log($"CanCombo Check - WithinWindow: {withinComboWindow}, " +
+                      $"NotFirstAttack: {notFirstAttack}, " +
+                      $"TimeSinceLast: {Time.time - lastAttackTime:F2}");
+        }
+
+        return withinComboWindow && notFirstAttack;
     }
 
     private void AdvanceComboStep()
     {
-        currentComboStep = (currentComboStep < comboSequence.Length - 1) ? currentComboStep + 1 : 0;
+        // Only advance if we have more attacks in the sequence
+        if (currentComboStep < comboSequence.Length - 1)
+        {
+            currentComboStep++;
+            if (debugLogs) Debug.Log($"Combo ADVANCED to step: {currentComboStep}");
+        }
+        else
+        {
+            // Reset to first attack if at end of combo
+            currentComboStep = 0;
+            if (debugLogs) Debug.Log($"Combo RESET to step: 0");
+        }
     }
 
     private void CheckComboReset()
