@@ -30,6 +30,7 @@ public class BeatPulse : MonoBehaviour
     public float beatCooldown = 0.2f; // Minimum time between detected peaks
 
 
+
     ComboManager comboManager = new ComboManager();
 
     void Start()
@@ -42,19 +43,19 @@ public class BeatPulse : MonoBehaviour
         {
             initialScales[i] = objToPulse[i].transform.localScale;
         }
- 
+
         comboManager.beatWindow = Mathf.Clamp(60f / DetectedBPM, 0.25f, 0.7f);
     }
 
     void Update()
     {
-        
+
         if (audioSource != null && audioSource.isPlaying)
         {
             AnalyzeAudio();
         }
     }
-    
+
     public void DetectBPM()
     {
 
@@ -86,7 +87,7 @@ public class BeatPulse : MonoBehaviour
             objToPulse[i].transform.localScale = Vector3.Lerp(currentScale, targetScale, smoothTime);
         }
 
-        
+
 
         // --- Beat Detection for BPM Estimation ---
         if (canDetect && avgAmplitude > beatThreshold)
@@ -109,7 +110,7 @@ public class BeatPulse : MonoBehaviour
                     avgInterval += i;
                 avgInterval /= peakIntervals.Count;
 
-                
+
                 if (avgInterval > 0.001f) // prevent divide-by-zero or super small intervals
                 {
                     float newBpm = Mathf.Clamp(60f / avgInterval, 60f, 180f);
